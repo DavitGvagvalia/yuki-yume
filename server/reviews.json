@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "reviewer": "John Doe",
+        "review": "Great food, great service!",
+        "stars":5
+    },
+    {
+        "id": 2,
+        "reviewer": "Jane Smith",
+        "review": "Excellent food, friendly service!",
+        "stars":5
+    },
+    {
+        "id": 3,
+        "reviewer": "Bob Johnson",
+        "review": "Delicious food, friendly service!",
+        "stars":4
+    }
+]

@@ -1,0 +1,25 @@
+
+#Hero {
+  font-family: 'JAPANRAMEN', sans-serif;
+  color: rgb(255, 179, 0);
+  overflow: hidden;
+}
+
+.shopping-cart {
+  position: relative;
+}
+
+.shopping-cart::after {
+  position: absolute;
+  top: -3px;
+  right: 10px;
+  content: attr(count);
+  background-color: #CD071E;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  text-align: center;
+  font-family: 'JAPANRAMEN';
+  
+}
+
