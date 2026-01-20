@@ -1,14 +1,9 @@
 import logo from '../../assets/images/logo.png';
 import { ShoppingCartIcon,HomeIcon,BookOpenIcon,ExclamationCircleIcon,ChatBubbleOvalLeftIcon } from '@heroicons/react/24/outline';
 
-function NavBar({ ChoosenItems = [],ToggleCart }) {
-  let choosenItemsLength = ChoosenItems.length
-  const showCartItemCount = choosenItemsLength > 0;
-
-
-  const handleToggleCart = () =>{
-    ToggleCart(prev => !prev)
-  }
+function NavBar({ ChosenProducts = [],handleToggleCart,toggle }) {
+  let ChosenProductsLength = ChosenProducts.length;
+  const showCartItemCount = ChosenProductsLength > 0 || toggle;
   return (
     <nav className={`
         fixed top-0 w-full h-20 z-51
@@ -17,7 +12,7 @@ function NavBar({ ChoosenItems = [],ToggleCart }) {
         text-white
         scroll-smooth
         lg:border-b-2
-      bg-black/40
+      bg-black/80
       `}>
       <a href="#Hero">
         <HomeIcon className='block md:hidden w-8 h-8'/>
@@ -28,7 +23,7 @@ function NavBar({ ChoosenItems = [],ToggleCart }) {
         <span className='hidden md:block'>Menu</span>
       </a>
       {showCartItemCount ? (
-        <button onClick={handleToggleCart} className='shopping-cart' count = {`${choosenItemsLength}`}>
+        <button onClick={handleToggleCart} className='shopping-cart' count = {`${ChosenProductsLength}`}>
           <ShoppingCartIcon className="w-10 h-10 mx-4"   /></button>
       ) : (
         <a href='#Hero'><img src={logo} alt="Logo" className="w-16 h-16 mx-4" /></a>

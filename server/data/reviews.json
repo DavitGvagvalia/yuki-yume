@@ -3,6 +3,7 @@
         "id": 1,
         "reviewer": "John Doe",
         "review": "Great food, great service!",
+        "product": "Philadelphia Classic",
         "stars":5
     },
     {

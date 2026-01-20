@@ -9,22 +9,25 @@ import Reviews from './components/sections/Reviews.jsx'
 import About from './components/sections/About.jsx'
 import Contacts from './components/sections/Contacts.jsx'
 function App() {
-  const {data: items} = useFetch('http://localhost:5000/items');
+  const {data: products} = useFetch('http://localhost:5000/items');
   const { data: reviews } = useFetch('http://localhost:5000/reviews');
 
-  const [ChosenItems,ChooseItem] = useState([])
-  const [toggle,toggleCart] = useState(false)
+  const [ChosenProducts,setChosenProducts] = useState([])
+  const [Toggle,toggleCart] = useState(false)
 
+  const HandleToggleCart = () =>{
+    toggleCart(prev => !prev)
+  }
 
 
 
   return (
     <div>
-      <NavBar ChoosenItems={ChosenItems} ToggleCart={toggleCart}/>
-      <Cart Toggle ={toggle} ChosenItems={ChosenItems}/>
+      <NavBar ChosenProducts={ChosenProducts} handleToggleCart={HandleToggleCart} toggle={Toggle}/>
+      <Cart HandleToggleCart ={HandleToggleCart} Toggle ={Toggle} ChosenProducts={ChosenProducts} setChosenProducts={setChosenProducts} />
       <Hero />
-      <Menu items={items} ChooseItem={ChooseItem} />
-      <Reviews />
+      <Menu products={products} setChosenProducts={setChosenProducts} />
+      <Reviews reviews={reviews} />
       <About />
       <Contacts />
     </div>

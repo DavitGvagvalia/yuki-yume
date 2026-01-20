@@ -11,14 +11,14 @@ app.use(express.json());
 
 app.get('/items', (req, res) => {
   const items = JSON.parse(
-    fs.readFileSync('./items.json', 'utf-8')
+    fs.readFileSync('./data/items.json', 'utf-8')
   );
   res.json(items);
 });
 
 app.get('/reviews', (req, res) => {
   const reviews = JSON.parse(
-    fs.readFileSync('./reviews.json', 'utf-8')
+    fs.readFileSync('./data/reviews.json', 'utf-8')
   );
   res.json(reviews);
 });
