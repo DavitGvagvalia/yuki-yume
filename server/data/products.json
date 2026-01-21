@@ -1,0 +1,78 @@
+[
+    {
+        "id": 1,
+        "image": "https://picsum.photos/1000",
+        "name": "Philadelphia Classic",
+        "description": "Fresh salmon over vinegared rice.",
+        "price": 39.00,
+        "category": "Sushi",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 5,
+        "ingredients": ["Salmon", "Rice", "Vinegar", "Wasabi"]
+    },
+    {
+        "id": 2,
+        "image": "https://picsum.photos/1000",
+        "name": "Baked roll with salmon",
+        "description": "Rich pork bone broth with noodles and toppings.",
+        "price": 32.00,
+        "category": "Ramen",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 15,
+        "ingredients": ["Pork broth", "Noodles", "Egg", "Chashu", "Green onions"]
+    },
+    {
+        "id": 3,
+        "image": "https://picsum.photos/1000",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },
+    {
+        "id": 4,
+        "image": "/Users/davitgvagvalia/Desktop/yuki-yume/client/src/assets/images/california.png",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },{
+        "id": 5,
+        "image": "/images/tempura1.jpg",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },{
+        "id": 6,
+        "image": "/images/tempura1.jpg",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    }
+]

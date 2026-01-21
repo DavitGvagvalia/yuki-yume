@@ -11,4 +11,12 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      '/get': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
 })
