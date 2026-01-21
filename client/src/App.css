@@ -15,8 +15,10 @@
   content: attr(count);
   background-color: #CD071E;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: fit-content;
+  min-width: 20px;
+  min-height: 20px;
+  aspect-ratio: 1/1;
   text-align: center;
   font-family: 'JAPANRAMEN';
   

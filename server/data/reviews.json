@@ -16,6 +16,25 @@
         "id": 3,
         "reviewer": "Bob Johnson",
         "review": "Delicious food, friendly service!",
-        "stars":4
+        "stars":3
+    },
+    {
+        "id": 4,
+        "reviewer": "John Doe",
+        "review": "Great food, great service!",
+        "product": "Philadelphia Classic",
+        "stars":1
+    },
+    {
+        "id": 5,
+        "reviewer": "Jane Smith",
+        "review": "Excellent food, friendly service!",
+        "stars":1
+    },
+    {
+        "id": 6,
+        "reviewer": "Bob Johnson",
+        "review": "Delicious food, friendly service!",
+        "stars":2
     }
 ]

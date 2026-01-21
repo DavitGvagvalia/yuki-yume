@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "image": "/Users/davitgvagvalia/Desktop/yuki-yume/client/src/assets/images/california.png",
+        "image": "https://picsum.photos/1000",
         "name": "Philadelphia Classic",
         "description": "Fresh salmon over vinegared rice.",
         "price": 39.00,
@@ -14,7 +14,7 @@
     },
     {
         "id": 2,
-        "image": "/Users/davitgvagvalia/Desktop/yuki-yume/client/src/assets/images/california.png",
+        "image": "https://picsum.photos/1000",
         "name": "Baked roll with salmon",
         "description": "Rich pork bone broth with noodles and toppings.",
         "price": 32.00,
@@ -27,7 +27,7 @@
     },
     {
         "id": 3,
-        "image": "/Users/davitgvagvalia/Desktop/yuki-yume/client/src/assets/images/california.png",
+        "image": "https://picsum.photos/1000",
         "name": "Shrimp Tempura",
         "description": "Crispy battered shrimp served with dipping sauce.",
         "price": 8.99,

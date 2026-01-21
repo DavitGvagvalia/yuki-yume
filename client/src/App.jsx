@@ -3,11 +3,11 @@ import './App.css'
 import { useFetch } from './hooks/fetch'
 import NavBar from './components/sections/NavBar.jsx'
 import Cart from './components/elements/cart.jsx'
-import Hero from './components/sections/Hero.jsx'
-import Menu from './components/sections/Menu.jsx'
-import Reviews from './components/sections/Reviews.jsx'
-import About from './components/sections/About.jsx'
-import Contacts from './components/sections/Contacts.jsx'
+import Hero from './components/sections/HeroSection.jsx'
+import Menu from './components/sections/MenuSection.jsx'
+import ReviewsSection from './components/sections/ReviewsSection.jsx'
+import About from './components/sections/AboutSection.jsx'
+import Contacts from './components/sections/ContactsSection.jsx'
 function App() {
   const {data: products} = useFetch('http://localhost:5000/items');
   const { data: reviews } = useFetch('http://localhost:5000/reviews');
@@ -27,7 +27,7 @@ function App() {
       <Cart HandleToggleCart ={HandleToggleCart} Toggle ={Toggle} ChosenProducts={ChosenProducts} setChosenProducts={setChosenProducts} />
       <Hero />
       <Menu products={products} setChosenProducts={setChosenProducts} />
-      <Reviews reviews={reviews} />
+      <ReviewsSection reviews={reviews} />
       <About />
       <Contacts />
     </div>
