@@ -8,11 +8,10 @@ function Hero() {
         >
             {/* Hero background */}
 
-                <img src={heroImage} alt="" className='absolute ml-[40%] top-[8%] h-[40dvh] w-full object-cover z-[-1]' />
-
+                <img src={heroImage} alt="" className='absolute ml-[30dvw] top-[6dvh] h-[40dvh] w-full object-cover z-0' />
 
                 <h1
-                    className="font-heading text-5xl md:text-7xl lg:text-8xl font-bold text-text mb-6 leading-tight"
+                    className=" text-[10dvw] font-bold  umb-6 leading-tight z-1 " unselectable=''
                 >
                     YUKI YUME
                 </h1>

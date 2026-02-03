@@ -1,35 +1,39 @@
 import { useState, useMemo } from "react";
-import Categories from "./Categories.jsx";
-import Products from "./Products.jsx";
+import Categories  from "../../components/menu/Categories.jsx";
+import Products from "../../components/menu/Products.jsx";
 import { useProducts } from "./useProducts.js";
-// import { useCart } from "../../hooks/useCart.js";
+import { useCart } from "../../hooks/useCart.jsx";
 
 const SectionText = () => {
   return (
     <div className="flex flex-col items-center text-center mb-8">
       <h2 className="text-3xl font-bold text-text">Menu</h2>
-      <p className="text-sm text-muted">Choose your favorites</p>
+      <p className="text-sm text-muted">
+        Choose your favorites
+      </p>
     </div>
   );
 };
 
-function MenuPage() {
+export default function MenuPage() {
   const { products, loading, error } = useProducts();
-  // const { addItem } = useCart();
 
   const [activeCategory, setActiveCategory] = useState("ALL");
-
-  if (loading) return <div className="text-center">Loading…</div>;
-  if (error) return <div className="text-center">Failed to load menu</div>;
+  const { addItem } = useCart();
+  /* ---------- derived data ---------- */
 
   const categories = useMemo(() => {
-    return Array.from(new Set(products.map((p) => p.category)));
+    return [ ...new Set(products.map((p) => p.category))];
   }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === "ALL") return products;
-    return products.filter((p) => p.category === activeCategory);
+    return products.filter(
+      (p) => p.category === activeCategory
+    );
   }, [products, activeCategory]);
+
+  /* ---------- render ---------- */
 
   return (
     <main className="min-h-screen bg-background py-20 px-2">
@@ -43,10 +47,8 @@ function MenuPage() {
 
       <Products
         products={filteredProducts}
-        // onChoose={addItem}
+        onChoose={addItem}
       />
     </main>
   );
 }
-
-export default MenuPage;

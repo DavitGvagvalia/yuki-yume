@@ -6,7 +6,7 @@ import Contact from './Contact'
 
 const Home = () => {
   return (
-    <main className='z-0'>
+    <main className='font-primary z-1'>
       <Hero />
       <Review />
       <About />

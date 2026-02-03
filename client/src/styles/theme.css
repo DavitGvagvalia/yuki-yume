@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+
+
+@font-face {
+    font-family: 'JAPAN RAMEN';
+    src: local('JAPAN RAMEN'), local('JAPANRAMEN'),
+        url('JAPANRAMEN.woff2') format('woff2'),
+        url('JAPANRAMEN.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: block;
+}
 /* =========================
    THEME TOKENS (Tailwind v4)
    ========================= */
@@ -23,27 +34,9 @@
   --color-disabled: #3A3A3A;
 
   /*----------FONTS ----------*/
-  --font-primary: 'Poppins', sans-serif;
+  --font-primary: 'JAPAN RAMEN', sans-serif;
   --font-secondary: 'Poppins', sans-serif;
-  --font-heading: 'JAPANRAMEN', sans-serif;
-
-  /* ---------- LAYOUT ---------- */
-
-  --spacing-navbar: 4rem;
-  --spacing-footer: 5rem;
-  --max-width-page: 1280px;
-
-  /* ---------- RADIUS ---------- */
-
-  --radius-sm: 0.375rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-
-  /* ---------- Z-INDEX ---------- */
-
-  --z-navbar: 50;
-  --z-cart: 60;
-  --z-modal: 70;
+  --font-heading: 'JAPAN RAMEN', sans-serif;
 
   /* ---------- ANIMATION ---------- */
 
@@ -51,3 +44,5 @@
   --duration-normal: 250ms;
   --duration-slow: 400ms;
 }
+
+

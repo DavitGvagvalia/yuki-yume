@@ -74,5 +74,57 @@
         "vegetarian": false,
         "preparationTime": 10,
         "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },
+    {
+        "id": 7,
+        "image": "/images/tempura1.jpg",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },
+    {
+        "id": 8,
+        "image": "/images/tempura1.jpg",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },
+    {
+        "id": 9,
+        "image": "/images/tempura1.jpg",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "Tempura",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
+    },
+    {
+        "id": 10,
+        "image": "/images/tempura1.jpg",
+        "name": "Shrimp Tempura",
+        "description": "Crispy battered shrimp served with dipping sauce.",
+        "price": 8.99,
+        "category": "sashimi",
+        "available": true,
+        "spicy": false,
+        "vegetarian": false,
+        "preparationTime": 10,
+        "ingredients": ["Shrimp", "Flour", "Egg", "Oil", "Dipping sauce"]
     }
 ]

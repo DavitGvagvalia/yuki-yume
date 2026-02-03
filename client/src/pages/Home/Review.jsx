@@ -62,9 +62,9 @@ function ReviewCard({ review }) {
 
 function ReviewList({ reviews }) {
   return (
-    <div className="flex gap-5 overflow-x-auto py-4 snap-x snap-mandatory">
+    <div className="flex gap-5 overflow-x-auto py-4">
       {reviews.map((review, index) => (
-        <div key={index} className="snap-start">
+        <div key={index} className="">
           <ReviewCard review={review} />
         </div>
       ))}
