@@ -1,9 +1,10 @@
-import { PlusIcon, MinusIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useCart } from "../../hooks/useCart.jsx";
+import {TrashIcon } from "@heroicons/react/24/outline";
+import Quantifier from "../ui/quantifier";
+import { useProducts } from "../../hooks/useProducts";
 export default function CartItem({ item }) {
-  const { increase, decrease, removeItem } = useCart();
+  const {getQuantity,increaseQuantity,decreaseQuantity,removeProduct} = useProducts()
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-border">
+    <div className="flex items-center gap-4 py-3 border-b border-border h-40">
       {/* Image */}
       <img
         src={item.image || "https://picsum.photos/200"}
@@ -18,43 +19,15 @@ export default function CartItem({ item }) {
       </div>
 
       {/* Quantity controls */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => decrease(item.id)}
-          className="
-            w-8 h-8
-            flex items-center justify-center
-            rounded-md
-            bg-card
-            hover:bg-surface
-            transition
-          "
-        >
-          <MinusIcon className="w-4 h-4 text-text" />
-        </button>
-
-        <span className="w-6 text-center text-text">
-          {item.quantity}
-        </span>
-
-        <button
-          onClick={() => increase(item.id)}
-          className="
-            w-8 h-8
-            flex items-center justify-center
-            rounded-md
-            bg-card
-            hover:bg-surface
-            transition
-          "
-        >
-          <PlusIcon className="w-4 h-4 text-text" />
-        </button>
-      </div>
+      <Quantifier
+  value={getQuantity(item.id)}
+  onIncrease={() => increaseQuantity(item.id)}
+  onDecrease={() => decreaseQuantity(item.id)}
+/>
 
       {/* Remove */}
       <button
-        onClick={() => removeItem(item.id)}
+        onClick={() => removeProduct(item.id)}
         className="
           ml-2
           text-muted

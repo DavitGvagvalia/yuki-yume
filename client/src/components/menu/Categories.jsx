@@ -1,20 +1,15 @@
 const Categories = ({ categories, activeCategory, setActiveCategory }) => {
 
-  const categoryClassNames = (category) => {
-    return `px-4  h-fit rounded items-center ${
-      activeCategory === category ? "bg-accent text-black" : ""
+  const categoryClassNames = (category) =>
+    `px-4 py-2 rounded flex-shrink-0 whitespace-nowrap transition
+    ${
+      activeCategory === category
+        ? "bg-accent text-black"
+        : "text-text hover:bg-surface"
     }`;
-  };
+
   return (
-    <div className="flex bg-background/40 gap-6 py-2 h-fit overflow-x-scroll overflow-y-clip items-center md:justify-center">
-      <button
-        type="button"
-        onClick={() => setActiveCategory("ALL")}
-        aria-pressed={activeCategory === "ALL"}
-        className={categoryClassNames("ALL")}
-      >
-        FULL
-      </button>
+    <div className="flex bg-background/40 gap-4 py-2 overflow-x-auto items-center md:justify-center">
 
       {categories.map((category) => (
         <button
@@ -30,4 +25,5 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
     </div>
   );
 };
+
 export default Categories;

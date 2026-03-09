@@ -4,8 +4,8 @@ export default function CartBadge({ count }) {
     <span
       className="
         absolute
-        top-3
-        right-2
+        top-[-7px]
+        right-[-1px]
         w-5
         h-5
         rounded-full

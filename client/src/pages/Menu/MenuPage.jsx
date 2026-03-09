@@ -1,8 +1,8 @@
 import { useState, useMemo } from "react";
-import Categories  from "../../components/menu/Categories.jsx";
+import Categories from "../../components/menu/Categories.jsx";
 import Products from "../../components/menu/Products.jsx";
-import { useProducts } from "./useProducts.js";
-import { useCart } from "../../hooks/useCart.jsx";
+import { useFetchProducts } from "./getProducts.js";
+import { useProducts } from "../../hooks/useProducts.jsx";
 
 const SectionText = () => {
   return (
@@ -16,24 +16,27 @@ const SectionText = () => {
 };
 
 export default function MenuPage() {
-  const { products, loading, error } = useProducts();
+  const { products, loading, error } = useFetchProducts();
+  const { addProduct } = useProducts();
 
   const [activeCategory, setActiveCategory] = useState("ALL");
-  const { addItem } = useCart();
-  /* ---------- derived data ---------- */
 
   const categories = useMemo(() => {
-    return [ ...new Set(products.map((p) => p.category))];
+    return ["ALL", ...new Set(products.map((p) => p.category))];
   }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (activeCategory === "ALL") return products;
-    return products.filter(
-      (p) => p.category === activeCategory
-    );
+    return products.filter((p) => p.category === activeCategory);
   }, [products, activeCategory]);
 
-  /* ---------- render ---------- */
+  if (loading) {
+    return <main className="min-h-screen bg-background py-20 px-2 text-text">Loading...</main>;
+  }
+
+  if (error) {
+    return <main className="min-h-screen bg-background py-20 px-2 text-text">Failed to load products.</main>;
+  }
 
   return (
     <main className="min-h-screen bg-background py-20 px-2">
@@ -47,7 +50,7 @@ export default function MenuPage() {
 
       <Products
         products={filteredProducts}
-        onChoose={addItem}
+        onChoose={addProduct}
       />
     </main>
   );

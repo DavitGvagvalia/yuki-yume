@@ -1,12 +1,11 @@
-import { ShoppingCartIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import React from "react";
-import ProductModal from "./ProductModal.jsx";
+import Detail from "../productDetails/Detail.jsx";
 const ProductCard = ({ product, onChoose }) => {
-  const [Modal,setModal] = React.useState(false);
-  const toggleModal = () => setModal(!Modal);
+
   return (
     <div className="bg-card rounded-md flex flex-col h-fit"
-    onClick={toggleModal}>
+    >
       <img
         src="https://picsum.photos/1000"
         alt={product.name}
@@ -25,13 +24,14 @@ const ProductCard = ({ product, onChoose }) => {
         <button
           type="button"
           onClick={onChoose}
-          className="bg-accent text-text rounded-md px-3 py-2 engage transition-transform z-10"
+          className="bg-accent text-text rounded-md px-3 py-2 engage transition-transform z-2"
         >
-          <ShoppingCartIcon className="w-5 h-5" />
+          <PlusIcon className="w-5 h-5" />
         </button>
         </div>
-        {Modal && <ProductModal item={product} isOpen={Modal} onClose={toggleModal}/>}
+        
       </div>
+      {product.isSelected &&<Detail item = {product}/>}
     </div>
   );
 };

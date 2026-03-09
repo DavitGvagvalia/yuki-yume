@@ -2,7 +2,7 @@ import React from 'react'
 import {PhoneIcon,EnvelopeIcon} from '@heroicons/react/24/outline';
 function Footer() {
   return (
-    <footer className='sticky bottom-0 py-6 bg-surface text-muted text-left'>
+    <footer className=' py-6 bg-surface text-muted text-left'>
       <div className='container mx-auto text-center font-primary'>
         <address>
           Contact us:
