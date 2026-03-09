@@ -1,10 +1,7 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'JapanRamen';
-  src:
-    url('../assets/fonts/JAPANRAMEN.woff2') format('woff2'),
-    url('../assets/fonts/JAPANRAMEN.woff') format('woff');
+  font-family: 'arial';
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -26,9 +23,9 @@
   --color-border: #2A2A2A;
   --color-disabled: #3A3A3A;
 
-  --font-primary: 'JapanRamen', sans-serif;
+  --font-primary: 'arial', sans-serif;
   --font-secondary: 'Poppins', sans-serif;
-  --font-heading: 'JapanRamen', sans-serif;
+  --font-heading: 'arial', sans-serif;
 
   --duration-fast: 150ms;
   --duration-normal: 250ms;
