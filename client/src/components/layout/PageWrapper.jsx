@@ -12,6 +12,8 @@ function PageWrapper({ children }) {
         flex
         flex-col
         overflow-x-hidden
+        md:overflow-y-scroll
+        md:max-h-[100%]
         ${isCartOpen ? "overflow-y-clip" : ''}
         ${isCartOpen ? "max-h-screen" : ''}
         `}
