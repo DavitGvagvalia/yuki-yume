@@ -1,8 +1,8 @@
 import {TrashIcon } from "@heroicons/react/24/outline";
 import Quantifier from "../ui/quantifier";
-import { useProducts } from "../../hooks/useProducts";
+import { useSelection } from "../../hooks/useSelection";
 export default function CartItem({ item }) {
-  const {getQuantity,increaseQuantity,decreaseQuantity,removeProduct} = useProducts()
+  const {getQuantity,increaseQuantity,decreaseQuantity,removeProduct} = useSelection()
   return (
     <div className="flex items-center gap-4 py-3 border-b border-border h-40">
       {/* Image */}

@@ -11,9 +11,9 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
   return (
     <div className="flex bg-background/40 gap-4 py-2 overflow-x-auto items-center md:justify-center">
 
-      {categories.map((category) => (
+      {categories.map((category,i) => (
         <button
-          key={category}
+          key={i}
           type="button"
           onClick={() => setActiveCategory(category)}
           aria-pressed={activeCategory === category}

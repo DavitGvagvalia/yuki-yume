@@ -1,13 +1,15 @@
 import { createContext, useContext, useState } from "react";
-
+import { createCustomContext } from "../utils/createContext";
 const CartContext = createContext(null);
 
-export const CartProvider = ({ children }) => {
+const CartProvider = ({ children }) => {
   const [isCartOpen, setCartOpen] = useState(false);
-
+  
+  //cart controls
   const toggleCart = () => setCartOpen((prev) => !prev);
   const openCart = () => setCartOpen(true);
   const closeCart = () => setCartOpen(false);
+
 
   return (
     <CartContext.Provider
@@ -18,12 +20,6 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-export const useCart = () => {
-  const context = useContext(CartContext);
+ const useCart = () => createCustomContext(CartContext);
 
-  if (!context) {
-    throw new Error("useCart must be used inside CartProvider");
-  }
-
-  return context;
-};
+export { CartProvider, useCart };

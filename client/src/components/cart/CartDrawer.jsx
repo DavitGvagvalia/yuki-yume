@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, ShoppingCartIcon } from "@heroicons/react/24/outline";
 import CartItem from "./CartItem.jsx";
-import { useProducts } from "../../hooks/useProducts.jsx";
+import { useSelection } from "../../hooks/useSelection.jsx";
 import { useCart } from "../../hooks/useCart.jsx";
 
 const CartItems = ({ items }) => {
@@ -52,13 +52,8 @@ const CartFooter = ({ totalPrice,selectedProducts }) => {
 };
 
 export default function CartDrawer() {
-  const { isCartOpen, toggleCart, closeCart  } = useCart()
-
-  const {
-    selectedProducts,
-    totalPrice
-  } = useProducts();
-  // if (selectedProducts.length === 0) closeCart()
+  const { isCartOpen, toggleCart  } = useCart()
+  const { selectedProducts,totalPrice} = useSelection();
   if (!isCartOpen) return null;
 
   return (

@@ -1,8 +1,8 @@
 import { createContext, useContext, useState } from "react";
-
+import { createCustomContext } from "../utils/createContext";
 const DetailContext = createContext(null);
 
-export const DetailProvider = ({ children }) => {
+const DetailProvider = ({ children }) => {
   const [isDetailOpen, setDetailOpen] = useState(false);
 
   const toggleDetail = () => setDetailOpen((prev) => !prev);
@@ -17,13 +17,6 @@ export const DetailProvider = ({ children }) => {
     </DetailContext.Provider>
   );
 };
+const useDetail = () => createCustomContext(DetailContext);
 
-export const useDetail = () => {
-  const context = useContext(DetailContext);
-
-  if (!context) {
-    throw new Error("useDetail must be used inside DetailProvider");
-  }
-
-  return context;
-};
+export { DetailProvider, useDetail };

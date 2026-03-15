@@ -3,10 +3,10 @@ import CartDrawer from "./components/cart/CartDrawer.jsx";
 import AppRoutes from "./routes/routes.jsx";
 import PageWrapper from "./components/layout/PageWrapper.jsx";
 import Footer from "./components/layout/Footer.jsx";
-import Quantifier from "./components/ui/quantifier.jsx";
 import { CartButton } from "./components/cart/CartButton.jsx";
 import { DetailProvider } from "./hooks/useDetail.jsx";
 export default function App() {
+  
 
   return (
     <PageWrapper>

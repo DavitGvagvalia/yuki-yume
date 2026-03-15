@@ -1,8 +1,8 @@
 import React from "react";
 import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import { StarIcon as StarIconOutline } from "@heroicons/react/24/outline";
-import { useReviews } from "./useReviews.js";
-
+import { ReviewsProvider } from "../../hooks/useReviews.jsx";
+import { useReviews } from "../../hooks/useReviews.jsx";
 /* ---------- Section header ---------- */
 
 function SectionText() {
@@ -60,7 +60,9 @@ function ReviewCard({ review }) {
 
 /* ---------- Review list ---------- */
 
-function ReviewList({ reviews }) {
+function ReviewList() {
+  const { reviews } = useReviews();
+
   return (
     <div className="flex gap-5 overflow-x-auto py-4">
       {reviews.map((review, index) => (
@@ -75,15 +77,14 @@ function ReviewList({ reviews }) {
 /* ---------- Page section ---------- */
 
 export default function Reviews() {
-  const { reviews, loading, error } = useReviews();
-
-  if (loading) return <div className="text-center">Loading…</div>;
-  if (error) return <div className="text-center">Failed to load reviews</div>;
 
   return (
+    <ReviewsProvider>
     <section className="py-12 bg-surface">
       <SectionText />
-      <ReviewList reviews={reviews} />
+      <ReviewList/>
     </section>
+    </ReviewsProvider>
+
   );
 }

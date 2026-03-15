@@ -18,8 +18,8 @@ const Linker = ({ to, Icon, text }) => {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex flex-col items-center text-text px-4 py-1 rounded-4xl   transition ${isActive ? "bg-accent-muted" : ""
-        } duration-500`
+        `flex flex-col items-center text-text px-4 py-1 rounded-b-3xl   transition ${isActive ? "bg-linear-to-b" : ""
+        } duration-500 from-transparent to-accent`
       }
     >
       <Icon className="w-10 h-10 " />

@@ -1,10 +1,9 @@
 import { ShoppingCartIcon } from '@heroicons/react/24/outline'
 import { useCart } from '../../hooks/useCart'
-import { useProducts } from '../../hooks/useProducts'
-import CartBadge from './CartBadge'
+import { useSelection } from '../../hooks/useSelection'
 export const CartButton = () => {
   const {  isCartOpen,toggleCart } = useCart()
-  const {totalCount,totalPrice} = useProducts()
+  const {totalCount,totalPrice} = useSelection()
   
   return (
     totalCount !== 0 && !isCartOpen &&
