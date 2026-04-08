@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'arial';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-background: #0E0E0E;
+  --color-surface: #151515;
+  --color-card: #1C1C1C;
+
+  --color-accent: #3077cf;
+  --color-accent-hover: #1b6cd1;
+  --color-accent-muted: #3077cf;
+
+  --color-text: #F2EDE4;
+  --color-text-secondary: #CFC8BD;
+  --color-muted: #9A948B;
+
+  --color-border: #2A2A2A;
+  --color-disabled: #3A3A3A;
+
+  --font-primary: 'arial', sans-serif;
+  --font-secondary: 'Poppins', sans-serif;
+  --font-heading: 'arial', sans-serif;
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+}
