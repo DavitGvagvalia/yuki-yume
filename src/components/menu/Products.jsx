@@ -7,7 +7,7 @@ const ProductCard = ({ product, onChoose }) => {
     <div className="bg-card rounded-md flex flex-col h-fit"
     >
       <img
-        src="https://picsum.photos/1000"
+        src={product.imageUrl}
         alt={product.name}
         className="w-full aspect-square object-cover"
       />
@@ -49,7 +49,7 @@ const ProductCard = ({ product, onChoose }) => {
 ">
       {products.map((product) => (
         <ProductCard
-          key={product.id}
+          key={product.uid}
           product={product}
           onChoose={() => onChoose(product)}
         />

@@ -3,7 +3,6 @@ import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import { StarIcon as StarIconOutline } from "@heroicons/react/24/outline";
 import { ReviewsProvider } from "../../hooks/useReviews.jsx";
 import { useReviews } from "../../hooks/useReviews.jsx";
-/* ---------- Section header ---------- */
 
 function SectionText() {
   return (
@@ -14,29 +13,32 @@ function SectionText() {
   );
 }
 
-/* ---------- Stars ---------- */
 
 function Stars({ stars }) {
+  console.log(stars)
   return (
     <div className="flex gap-1">
       {[...Array(5)].map((_, i) =>
-        i < stars ? (
+        i < stars ? 
+        (
           <StarIconSolid
             key={i}
             className="w-5 h-5 text-accent"
           />
-        ) : (
+        ) 
+        : 
+        (
           <StarIconOutline
             key={i}
             className="w-5 h-5 text-muted"
           />
         )
+        
       )}
     </div>
   );
 }
 
-/* ---------- Review card ---------- */
 
 function ReviewCard({ review }) {
   return (
@@ -58,7 +60,6 @@ function ReviewCard({ review }) {
   );
 }
 
-/* ---------- Review list ---------- */
 
 function ReviewList() {
   const { reviews } = useReviews();
@@ -74,7 +75,6 @@ function ReviewList() {
   );
 }
 
-/* ---------- Page section ---------- */
 
 export default function Reviews() {
 

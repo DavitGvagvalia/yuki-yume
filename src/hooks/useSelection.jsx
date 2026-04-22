@@ -3,17 +3,17 @@ import { createCustomContext } from "../utils/createContext";
 const CartContext = createContext(null);
 
 const SelectionProvider = ({ children }) => {
-
+const localStorageKey = "SelectedProducts";
 
 const [selectedProducts, setSelectedProducts] = useState(
     () => {
-    const stored = localStorage.getItem("products");
+    const stored = localStorage.getItem(localStorageKey);
     return stored ? JSON.parse(stored) : [];
   })
 
   useEffect(() => {
     console.log("Selected products updated:", selectedProducts);
-    localStorage.setItem("products", JSON.stringify(selectedProducts));
+    localStorage.setItem(localStorageKey, JSON.stringify(selectedProducts));
   }, [selectedProducts]);
   
 //product controls

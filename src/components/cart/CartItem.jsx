@@ -7,7 +7,7 @@ export default function CartItem({ item }) {
     <div className="flex items-center gap-4 py-3 border-b border-border h-40">
       {/* Image */}
       <img
-        src={item.image || "https://picsum.photos/200"}
+        src={item.imageUrl}
         alt={item.name}
         className="w-16 h-16 rounded-md object-cover"
       />

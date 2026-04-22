@@ -1,27 +1,22 @@
-import { createContext,  useEffect, useState } from "react";
-import { apiGet } from "../utils/api";
+import { createContext, useEffect, useState } from "react";
 import { createCustomContext } from "../utils/createContext";
-
+import { getReviews } from "../services/reviews.service";
+import { fetcherHandler } from "../utils/StorageHandler";
 const ReviewsContext = createContext(null);
 
 const ReviewsProvider = ({ children }) => {
-  
+
   const [reviews, setReviews] = useState([]);
 
-  useEffect(() => {
-    async function fetchReviews() {
-        const stored = localStorage.getItem("reviews");
-        if (stored) {
-          setReviews(JSON.parse(stored));
-          return;
-        }   
-        const data = await apiGet('/api/products');
-        setReviews(data);
-    }
-    fetchReviews();
-    
-  }, []);
-  const value = { reviews, setReviews };
+  useEffect(()=>{
+    (async () => {
+      const reviewData = await fetcherHandler("reviews", getReviews);
+      setReviews(reviewData);
+    })()
+  },[])
+
+
+  const value = { reviews };
 
   return (
     <ReviewsContext.Provider value={value}>
@@ -30,6 +25,6 @@ const ReviewsProvider = ({ children }) => {
   );
 }
 
-const useReviews = () =>createCustomContext(ReviewsContext);
+const useReviews = () => createCustomContext(ReviewsContext);
 
 export { ReviewsProvider, useReviews };

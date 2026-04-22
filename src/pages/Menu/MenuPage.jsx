@@ -1,9 +1,7 @@
 import { useState, useMemo } from "react";
 import Categories from "../../components/menu/Categories.jsx";
 import Products from "../../components/menu/Products.jsx";
-
 import { useProducts } from "../../hooks/useProducts.jsx";
-import { useCart } from "../../hooks/useCart.jsx";
 import { DetailProvider } from "../../hooks/useDetail.jsx";
 import { useSelection } from "../../hooks/useSelection.jsx";
 
@@ -20,14 +18,15 @@ const SectionText = () => {
 };
 
 export default function MenuPage() {
-  const { products } = useProducts();
-  const {addProduct} = useSelection()
+  const { products } = useProducts()
+  const { addProduct } = useSelection()
 
   const [activeCategory, setActiveCategory] = useState("ALL");
 
 
   const categories = useMemo(() => {
-    return ["ALL", ...new Set(products.map((p) => p.category ))];
+    console.log(products)
+    return ["ALL", ...new Set(products.map((p) => p.category))];
   }, [products]);
 
   const filteredProducts = useMemo(() => {
@@ -40,7 +39,6 @@ export default function MenuPage() {
   return (
     <main className="min-h-screen bg-background py-20 px-2">
       <SectionText />
-
       <Categories
         categories={categories}
         activeCategory={activeCategory}
