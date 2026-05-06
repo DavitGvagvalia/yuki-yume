@@ -12,6 +12,7 @@ const CartItems = ({ items }) => {
         </p>
       ) : (
         items.map((item) => (
+          console.log(item),
           <CartItem key={item.id} item={item} />
         ))
       )}

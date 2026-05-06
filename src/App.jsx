@@ -11,9 +11,7 @@ export default function App() {
   return (
     <PageWrapper>
       <Navbar />
-      <DetailProvider>
       <AppRoutes />
-      </DetailProvider>
       <CartDrawer />
       <CartButton />
       <Footer />

@@ -1,15 +1,17 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
-import React from "react";
+import { useState } from "react";
 import Detail from "../productDetails/Detail.jsx";
 const ProductCard = ({ product, onChoose }) => {
-
+  const [isDetailOpen, setDetailOpen] = useState(false);
+  const openDetail = () => setDetailOpen(true);
+  const closeDetail = () => setDetailOpen(false);
+  const toggleDetail = () => setDetailOpen(prev => !prev);
   return (
-    <div className="bg-card rounded-md flex flex-col h-fit"
-    >
+    <div className="bg-card rounded-md flex flex-col h-max" onClick={toggleDetail}>
       <img
         src={product.imageUrl}
         alt={product.name}
-        className="w-full aspect-square object-cover"
+        className="w-full h-full object-cover"
       />
 
       <div className="p-4 flex flex-col md:flex-row justify-between h-full">
@@ -21,22 +23,25 @@ const ProductCard = ({ product, onChoose }) => {
         </div>
 
         <div className="flex justify-end items-end">
-        <button
-          type="button"
-          onClick={onChoose}
-          className="bg-accent text-text rounded-md px-3 py-2 engage transition-transform z-2"
-        >
-          <PlusIcon className="w-5 h-5" />
-        </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChoose();
+            }}
+            className="bg-accent text-text rounded-md px-3 py-2 engage transition-transform z-2"
+          >
+            <PlusIcon className="w-5 h-5" />
+          </button>
         </div>
-        
+
       </div>
-      {product.isSelected &&<Detail item = {product}/>}
+      {isDetailOpen && <Detail item={product} closeDetail={closeDetail} />}
     </div>
   );
 };
- const Products = ({ products, onChoose }) => {
-  
+const Products = ({ products, onChoose }) => {
+
   return (
     <div className="
   grid grid-cols-2 gap-4 mt-8
@@ -47,9 +52,9 @@ const ProductCard = ({ product, onChoose }) => {
   md:overflow-x-auto
   md:overflow-y-hidden
 ">
-      {products.map((product) => (
+      {products.map((product, key) => (
         <ProductCard
-          key={product.uid}
+          key={key}
           product={product}
           onChoose={() => onChoose(product)}
         />

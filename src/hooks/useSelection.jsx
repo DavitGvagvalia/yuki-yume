@@ -12,7 +12,6 @@ const [selectedProducts, setSelectedProducts] = useState(
   })
 
   useEffect(() => {
-    console.log("Selected products updated:", selectedProducts);
     localStorage.setItem(localStorageKey, JSON.stringify(selectedProducts));
   }, [selectedProducts]);
   

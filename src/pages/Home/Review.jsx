@@ -15,7 +15,6 @@ function SectionText() {
 
 
 function Stars({ stars }) {
-  console.log(stars)
   return (
     <div className="flex gap-1">
       {[...Array(5)].map((_, i) =>

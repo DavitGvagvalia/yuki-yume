@@ -19,8 +19,7 @@ export const fetcherHandler = async (key, fetcher) => {
       }
     }
 
-    // ✅ Fetch fresh data
-    console.log("Fetching fresh data for:", key);
+
     const fetchedData = await fetcher();
 
     try {
@@ -36,3 +35,4 @@ export const fetcherHandler = async (key, fetcher) => {
     throw error;
   }
 };
+

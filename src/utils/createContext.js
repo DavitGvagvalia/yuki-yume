@@ -5,7 +5,7 @@ export const createCustomContext = (context) => {
   const ctx = useContext(context);
 
   if (!ctx) {
-    throw new Error("useSelection must be used inside SelectionProvider");
+    throw new Error("custom context must be used within a provider");
   }
 
   return ctx;

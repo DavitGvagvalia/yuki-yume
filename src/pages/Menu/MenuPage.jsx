@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import Categories from "../../components/menu/Categories.jsx";
 import Products from "../../components/menu/Products.jsx";
 import { useProducts } from "../../hooks/useProducts.jsx";
-import { DetailProvider } from "../../hooks/useDetail.jsx";
 import { useSelection } from "../../hooks/useSelection.jsx";
 
 
@@ -25,7 +24,6 @@ export default function MenuPage() {
 
 
   const categories = useMemo(() => {
-    console.log(products)
     return ["ALL", ...new Set(products.map((p) => p.category))];
   }, [products]);
 
