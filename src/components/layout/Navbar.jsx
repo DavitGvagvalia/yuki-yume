@@ -4,6 +4,9 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import logo from "../../../assets/images/logo.png";
+import { useCheckout } from "../../hooks/useCheckout";
+
+
 
 const Logo = () => {
   return (
@@ -30,7 +33,10 @@ const Linker = ({ to, Icon, text }) => {
 
 export default function NavBar() {
 
+    const { isCheckoutOpen } = useCheckout()
+
   return (
+    !isCheckoutOpen && (
     <nav
       className="fixed top-0 left-0 w-full h-18 px-4 py-4 md:px-10 flex justify-center items-center gap-10 bg-background/60 backdrop-blur z-8"
     >
@@ -41,6 +47,6 @@ export default function NavBar() {
 
 
       <Linker to="/profile" Icon={UserIcon} text="Profile" />
-    </nav>
+    </nav>)
   );
 }

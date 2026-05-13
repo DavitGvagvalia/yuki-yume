@@ -61,6 +61,7 @@ export const productDefaults: Product = {
 };
 
 export const productRequiredFields: (keyof Product)[] = [
+  "image",
   "name",
   "description",
   "price",

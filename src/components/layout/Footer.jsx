@@ -1,7 +1,10 @@
 import React from 'react'
 import {PhoneIcon,EnvelopeIcon} from '@heroicons/react/24/outline';
+import { useCheckout } from '../../hooks/useCheckout'
 function Footer() {
+  const { isCheckoutOpen } = useCheckout()
   return (
+    !isCheckoutOpen && (
     <footer className=' py-6 bg-surface text-muted text-left'>
       <div className='container mx-auto text-center font-primary'>
         <address>
@@ -16,6 +19,7 @@ function Footer() {
       </div>
     </footer>
   )
+)
 }
 
 export default Footer

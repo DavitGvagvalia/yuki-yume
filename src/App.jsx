@@ -5,16 +5,20 @@ import PageWrapper from "./components/layout/PageWrapper.jsx";
 import Footer from "./components/layout/Footer.jsx";
 import { CartButton } from "./components/cart/CartButton.jsx";
 import { DetailProvider } from "./hooks/useDetail.jsx";
+import { CheckoutProvider } from './hooks/useCheckout'
+
 export default function App() {
-  
+
 
   return (
     <PageWrapper>
-      <Navbar />
-      <AppRoutes />
-      <CartDrawer />
-      <CartButton />
-      <Footer />
+      <CheckoutProvider>
+        <Navbar />
+        <AppRoutes />
+        <CartDrawer />
+        <CartButton />
+        <Footer />
+      </CheckoutProvider>
     </PageWrapper>
   );
 }

@@ -30,9 +30,15 @@ const DetailHeader = ({ product, closeDetail }) => {
 const DetailBody = ({ product }) => {
   return (
     <div className='p-4 flex flex-col gap-4'>
-      <img src={product.imageUrl} alt={product.name} className='w-full object-cover rounded-md' />
-      <p className='text-sm text-muted'>{product.category}</p>
-      <h3 className='text-xl font-bold'>{product.name} {product.spicy && <span className='text-red-500'>🔥</span>}</h3>
+      <img src={product.imageUrl} alt={product.name} className='w-full object-cover rounded-md max-h-[300px]' />
+      <div className='flex flex-col gap-0.5'>
+        <h3 className='text-xl font-bold'>
+        {product.name}
+         {product.spicy && <span className='text-red-500'>🔥</span>}
+         {product.vegetarian && <span className='text-green-500'>🌱</span>}
+         </h3>
+      <p className='text-sm text-muted'>{product.category}</p>  
+      </div>
       <p className='text-base text-muted'>{product.description}</p>
       <div className="flex flex-wrap gap-1 text-sm">
         {product.ingredients.map((ingredient) => (
@@ -74,7 +80,7 @@ const Detail = ({ item, closeDetail }) => {
         shadow-xl
         md:h-screen
         md:w-[30vw]
-        z-9"
+        z-[9]"
     >
       <DetailHeader product={item} closeDetail={closeDetail} />
       <DetailBody product={item} />

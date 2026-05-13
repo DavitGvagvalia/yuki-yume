@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home/Home.jsx'
 import MenuPage from './pages/Menu/MenuPage.jsx'
-import CheckoutPage from './pages/Checkout/CheckoutPage.js'
+import CheckoutPage from './pages/Checkout/CheckoutPage.jsx'
 import ProfilePage from './pages/Profile/ProfilePage.jsx'
 function routes() {
   return (
