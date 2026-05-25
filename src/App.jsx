@@ -4,21 +4,19 @@ import AppRoutes from "./routes.jsx";
 import PageWrapper from "./components/layout/PageWrapper.jsx";
 import Footer from "./components/layout/Footer.jsx";
 import { CartButton } from "./components/cart/CartButton.jsx";
-import { DetailProvider } from "./hooks/useDetail.jsx";
-import { CheckoutProvider } from './hooks/useCheckout'
+import CheckoutPage from "./pages/Checkout/CheckoutPage.jsx";
 
 export default function App() {
 
 
   return (
     <PageWrapper>
-      <CheckoutProvider>
         <Navbar />
         <AppRoutes />
         <CartDrawer />
         <CartButton />
+        <CheckoutPage />
         <Footer />
-      </CheckoutProvider>
     </PageWrapper>
   );
 }

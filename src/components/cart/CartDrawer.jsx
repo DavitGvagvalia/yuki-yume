@@ -41,14 +41,14 @@ const CartHeader = ({ onCartToggle }) => {
 };
 
 const CartFooter = ({ totalPrice,selectedProducts }) => {
-  const { toggleCheckout  } = useCheckout()
+  const { openCheckout } = useCheckout()
   return (
     <div className=" py-5 border-t border-border flex justify-center">
       <div className=' w-[90%] bg-background flex  justify-between items-center p-2 rounded-4xl bottom-5 z-9 px-7 border border-border'>
       <h1 className=''>{totalPrice} GEL</h1>
-      <Link to="checkout" disabled={selectedProducts.length === 0 } onClick={toggleCheckout} className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted'>
+      <button disabled={selectedProducts.length === 0 } onClick={openCheckout} className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted'>
          <span>checkout</span>
-      </Link>
+      </button>
       </div>
     </div>
   );

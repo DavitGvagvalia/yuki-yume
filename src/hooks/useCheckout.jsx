@@ -4,9 +4,7 @@ import { useLocation } from "react-router";
 const CheckoutContext = createContext(null);
 
 const CheckoutProvider = ({ children }) => {
-  const location = useLocation();
-  let defaultValue = location.pathname === "/checkout";
-  const [isCheckoutOpen, setCheckoutOpen] = useState(defaultValue);
+  const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   
   //Checkout controls
   const toggleCheckout = () => setCheckoutOpen((prev) => !prev);
