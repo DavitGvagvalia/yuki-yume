@@ -1,19 +1,42 @@
-import React from 'react'
-import { useState } from 'react'
-const CheckoutCustomerDetails = () => {
-  const [telephone, setTelephone] = useState('+995')
-  const [email, setEmail] = useState('')
+import React, { useState } from 'react'
+import { PhoneIcon, UserIcon } from '@heroicons/react/24/outline'
+import IntlTelInput from '@intl-tel-input/react'
+import 'intl-tel-input/styles'
 
-  const handleChange = (e,setter) => {
-    setter(e.target.value)
-  }
+const CheckoutCustomerDetails = () => {
+  const [telephone, setTelephone] = useState('')
+
   return (
-    <div className='flex flex-col'>
-      <h2>lets us contact you</h2>
-      <label htmlFor="tel">Mobile</label>
-      <input type="tel"  name="tel" pattern="[0-9]{3}-[0-9]{2}-[0-9]{3}" value={telephone} onChange={(e) => handleChange(e,setTelephone)} />
-      <label htmlFor="email">Email</label>
-      <input type="email" name="email" value={email} onChange={(e) => handleChange(e,setEmail)} />
+    <div className="flex flex-col gap-3">
+      <h2>plaese provide contact info</h2>
+
+      <div className="flex items-center gap-2 px-3 py-2 bg-surface rounded-3xl ">
+        <UserIcon className="w-5 h-5" />
+
+        <input
+          type="text"
+          placeholder="John Doe"
+          className="focus:outline-none"
+        />
+      </div>
+
+      <div className="flex items-center gap-2 px-3 py-2 bg-surface rounded-3xl">
+        <PhoneIcon className="w-5 h-5" />
+
+        <IntlTelInput
+          initialCountry="ge"
+          loadUtils={() => import('intl-tel-input/utils')}
+          onChangeNumber={setTelephone}
+          inputProps={{
+            type: 'tel',
+            placeholder: 'XXX-XXX-XXXX',
+            className:
+              ' focus:outline-none',
+          }}
+        />
+      </div>
+
+ 
     </div>
   )
 }

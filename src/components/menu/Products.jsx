@@ -11,7 +11,7 @@ function ProductCard({ product, openDetail, onChoose }) {
       <img
         src={product.imageUrl}
         alt={product.name}
-        className=" rounded-md"
+        className=" rounded-md object-cover w-full h-full"
       />
       </div>
 
@@ -71,7 +71,6 @@ const Products = ({ products, onChoose }) => {
 
       {selectedProduct && (
         <>
-
           <Detail
             item={selectedProduct}
             closeDetail={closeDetail}

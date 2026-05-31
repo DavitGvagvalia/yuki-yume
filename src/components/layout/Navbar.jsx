@@ -46,7 +46,6 @@ export default function NavBar() {
       <Linker to="/" Icon={Logo} text="Home" />
 
 
-      <Linker to="/profile" Icon={UserIcon} text="Profile" />
     </nav>)
   );
 }

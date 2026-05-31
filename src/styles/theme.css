@@ -9,6 +9,7 @@
 
 @theme {
   --color-background: #0E0E0E;
+  --image-backgournd: linear-gradient(to bottom, #0E0E0E, #1C1C1C);
   --color-surface: #151515;
   --color-card: #1C1C1C;
 

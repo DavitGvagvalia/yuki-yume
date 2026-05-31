@@ -4,6 +4,8 @@ import { useSelection } from "../../hooks/useSelection.jsx";
 import { useCart } from "../../hooks/useCart.jsx";
 import { useCheckout } from "../../hooks/useCheckout.jsx";
 import { Link } from "react-router";
+
+
 const CartItems = ({ items }) => {
   return (
     <div className="flex-1 px-4 overflow-y-auto">

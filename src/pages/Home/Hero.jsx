@@ -4,7 +4,7 @@ function Hero() {
     return (
         <section
             id="hero"
-            className="relative h-[90dvh] flex items-center justify-center flex-col"
+            className="relative h-[95dvh] flex items-center justify-center flex-col"
         >
             {/* Hero background */}
 

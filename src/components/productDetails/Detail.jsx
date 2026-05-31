@@ -3,6 +3,10 @@ import { useProducts } from '../../hooks/useProducts'
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useDetail } from '../../hooks/useDetail';
 import { useSelection } from '../../hooks/useSelection';
+import {Quantifier} from "../ui/quantifier";
+
+
+
 
 const DetailHeader = ({ product, closeDetail }) => {
   return (
@@ -33,11 +37,11 @@ const DetailBody = ({ product }) => {
       <img src={product.imageUrl} alt={product.name} className='w-full object-cover rounded-md max-h-[300px]' />
       <div className='flex flex-col gap-0.5'>
         <h3 className='text-xl font-bold'>
-        {product.name}
-         {product.spicy && <span className='text-red-500'>🔥</span>}
-         {product.vegetarian && <span className='text-green-500'>🌱</span>}
-         </h3>
-      <p className='text-sm text-muted'>{product.category}</p>  
+          {product.name}
+          {product.spicy && <span className='text-red-500'>🔥</span>}
+          {product.vegetarian && <span className='text-green-500'>🌱</span>}
+        </h3>
+        <p className='text-sm text-muted'>{product.category}</p>
       </div>
       <p className='text-base text-muted'>{product.description}</p>
       <div className="flex flex-wrap gap-1 text-sm">
@@ -56,12 +60,22 @@ const DetailBody = ({ product }) => {
 }
 
 const DetailFooter = ({ product }) => {
-  const { addProduct } = useSelection()
+    const {getQuantity,increaseQuantity,decreaseQuantity,removeProduct,addProduct} = useSelection()
+    let quantity = getQuantity(product.id)
+
   return (
-    <div className='py-5 flex justify-center'>
-      <button className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted' onClick={() => addProduct(product)}>
+    <div className='py-5 flex justify-center gap-4 items-center'>
+       {!quantity ? <button className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted' onClick={() => addProduct(product)}>
         <span >add to cart</span>
-      </button>
+        </button>
+        :
+      <div className='scale-120'>
+        <Quantifier
+          value={quantity}
+          onIncrease={() => increaseQuantity(product.id)}
+          onDecrease={() => decreaseQuantity(product.id)}
+        />
+      </div>}
     </div>
   )
 }
@@ -73,6 +87,7 @@ const Detail = ({ item, closeDetail }) => {
         left-0
         top-0
         h-full
+        overflow-x-auto
         w-screen
         bg-surface
         flex
