@@ -1,6 +1,16 @@
 import React from 'react'
-
-const CheckoutPayment = () => {
+import { useOrder } from '../../hooks/useOrders.jsx';
+const CheckoutPayment = ({selectedItems,totalPrice}) => {
+    const { createNewOrder } = useOrder();
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        createNewOrder({
+            items: selectedItems,
+            total: totalPrice,
+            status: "pending",
+            createdAt: new Date(),
+        });
+    }
   return (
     <div className="flex flex-col gap-3">
         <datalist id="payment-methods">
@@ -18,7 +28,9 @@ const CheckoutPayment = () => {
         <input type="text" placeholder="Expiration Date" aria-label="Enter card expiration date" />
 
 
-            <input type="text" placeholder="CVV" aria-label="Enter card CVV" />
+            <input type="text" placeholder="CVV" aria-label="Enter card CVV" /> 
+
+            <button type="submit" onClick={handleSubmit}>new order</button>
     </div>
   )
 }

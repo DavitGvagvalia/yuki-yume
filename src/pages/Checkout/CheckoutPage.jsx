@@ -34,7 +34,7 @@ function CheckoutPage() {
         <CheckoutHeader closeCheckOut={closeCheckout}/>
         <CheckoutCustomerDetails />
         <CheckoutAddress />
-        <CheckoutPayment />
+        <CheckoutPayment  selectedItems={selectedProducts} totalPrice={totalPrice}/>
         
     </main>
   )
