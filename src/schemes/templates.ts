@@ -99,6 +99,34 @@ export function createReview(data: Partial<Review> = {}): Review {
   return createFromTemplate(reviewDefaults, reviewRequiredFields, data);
 }
 
+export type Order = {
+  id: string;
+  name: string;
+  products: string[];
+  date: string;
+  totalPrice: number;
+  status: string;
+};
 
+export const orderDefaults: Order = {
+  id: "",
+  name: "",
+  products: [],
+  date: "",
+  totalPrice: 0,
+  status: "",
+};
 
+export const orderRequiredFields: (keyof Order)[] = [
+  "id",
+  "name",
+  "products",
+  "date",
+  "totalPrice",
+  "status",
+];
+
+export function createOrder(data: Partial<Order> = {}): Order {
+  return createFromTemplate(orderDefaults, orderRequiredFields, data);
+}
 

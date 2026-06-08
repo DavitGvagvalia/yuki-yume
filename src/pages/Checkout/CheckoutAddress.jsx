@@ -1,5 +1,5 @@
 // src/components/DeliveryMap.jsx
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -30,24 +30,24 @@ const customerIcon = L.divIcon({
 const RESTAURANT_LOCATION = [41.70400903072833, 44.80448381630125]; // [Lat, Lng]
 const FIVE_KM_IN_METERS = 5000;
 
+// MapEventsHandler component defined outside to allow hook usage at component level
+function MapEventsHandler({ position, setPosition, onLocationSelected }) {
+  const handleMapClick = useCallback((e) => {
+    setPosition(e.latlng);
+    onLocationSelected(e.latlng);
+  }, [setPosition, onLocationSelected]);
 
-
+  useMapEvents({
+    click: handleMapClick,
+  });
+  return position === null ? null : <Marker position={position} icon={customerIcon} />;
+}
 
 export function DeliveryMap({ onLocationSelected }) {
   const [position, setPosition] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchStatus, setSearchStatus] = useState('');
   const [mapInstance, setMapInstance] = useState(null);
-
-  function MapEventsHandler() {
-    useMapEvents({
-      click(e) {
-        setPosition(e.latlng);
-        onLocationSelected(e.latlng);
-      },
-    });
-    return position === null ? null : <Marker position={position} icon={customerIcon} />;
-  }
 
   const handleAddressSearch = async (e) => {
     e.preventDefault();
@@ -94,6 +94,7 @@ export function DeliveryMap({ onLocationSelected }) {
         <input
           type="text"
           placeholder="Enter address..."
+          aria-label="Enter delivery address to search on map"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex grow p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -135,7 +136,8 @@ export function DeliveryMap({ onLocationSelected }) {
             pathOptions={{ color: 'red', fillColor: '#3077cf', weight: 10, opacity: 1, fillOpacity: .2 }}
           />
 
-          <MapEventsHandler />
+          <MapEventsHandler position={position} setPosition={setPosition} onLocationSelected={onLocationSelected} />
+
         </MapContainer>
       </div>
     </div>
@@ -143,10 +145,14 @@ export function DeliveryMap({ onLocationSelected }) {
 }
 
 const CheckoutAddress = () => {
+  const handleLocationSelected = useCallback((coords) => {
+    console.log("Selected delivery location:", coords);
+  }, []);
+
   return (
     <div className="flex flex-col gap-3 items-center justify-center">
 
-      <DeliveryMap onLocationSelected={(coords) => console.log("Selected delivery location:", coords)} />
+      <DeliveryMap onLocationSelected={handleLocationSelected} />
     </div>
   )
 }

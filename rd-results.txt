@@ -1,0 +1,466 @@
+React Doctor v0.2.16
+
+[?25l[36m?[39m [1mChoose what to scan[22m [90m›[39m [90m- Use arrow-keys. Return to submit.[39m
+[36m❯[39m   [36m[4mFull codebase[39m[24m[90m - Scan every source file[39m
+    Uncommitted changes (4)[90m[39m
+[2K[1G[32m✔[39m [1mChoose what to scan[22m [90m›[39m Full codebase
+[?25h  
+[32m✔[39m Scanned 45 files in 1.6s [~10 workers]
+
+  Bugs › 1 error, 13 warnings
+  Performance › 2 errors, 9 warnings
+  Maintainability › 54 warnings
+  Accessibility › 11 warnings
+
+  90 issues
+
+  ✗ Bugs: Hook called conditionally
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/rules-of-hooks
+    → Call hooks at the top level of a React function component
+    or a custom Hook.
+
+    src/utils/createContext.js:5
+    ┌──────────────────────────────────────────────────────────────┐
+    │   4 | export const createCustomContext = (context) => {      │
+    │ > 5 |   const ctx = useContext(context);                     │
+    │     |               ^                                        │
+    │   6 |                                                        │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Bugs: Array index used as a key ×2
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/no-array-index-as-key
+    → Use a stable id from the item, like `key={item.id}` or
+    `key={item.slug}`. Index keys break when the list reorders
+    or filters.
+
+    src/pages/Home/Review.jsx:69
+    ┌──────────────────────────────────────────────────────────────┐
+    │   68 |       {reviews.map((review, index) => (               │
+    │ > 69 |         <div key={index} className="">                │
+    │      |              ^                                        │
+    │   70 |           <ReviewCard review={review} />              │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/components/menu/Categories.jsx:16
+    ┌──────────────────────────────────────────────────────────────┐
+    │   15 |         <button                                       │
+    │ > 16 |           key={i}                                     │
+    │      |           ^                                           │
+    │   17 |           type="button"                               │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Bugs: Time or random value in JSX
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/rendering-hydration-mismatch-time
+    → Move time or random values into useEffect+useState so
+    they only run in the browser, or add
+    suppressHydrationWarning to the parent if it's intentional
+
+    src/components/layout/Footer.jsx:18
+    ┌──────────────────────────────────────────────────────────────┐
+    │   17 |         </address>                                    │
+    │ > 18 |         <p> {new Date().getFullYear()} © Yuki Yume a[0m… │
+    │      |              ^                                        │
+    │   19 |       </div>                                          │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Performance: Array index used as a key ×2
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/no-array-index-key
+    → Use a stable `key` from your data instead of the array
+    index.
+
+    src/pages/Home/Review.jsx:69
+    ┌──────────────────────────────────────────────────────────────┐
+    │   68 |       {reviews.map((review, index) => (               │
+    │ > 69 |         <div key={index} className="">                │
+    │      |              ^                                        │
+    │   70 |           <ReviewCard review={review} />              │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/components/menu/Categories.jsx:16
+    ┌──────────────────────────────────────────────────────────────┐
+    │   15 |         <button                                       │
+    │ > 16 |           key={i}                                     │
+    │      |           ^                                           │
+    │   17 |           type="button"                               │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Maintainability: Redundant manual memoization ×4
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/react-compiler-no-manual-memoization
+    → Delete the `useMemo` / `useCallback` / `memo` call and
+    use the plain value or component. React Compiler caches it
+    for you.
+
+    src/pages/Checkout/CheckoutAddress.jsx:35
+    ┌──────────────────────────────────────────────────────────────┐
+    │   34 | function MapEventsHandler({ position, setPosition, o[0m… │
+    │ > 35 |   const handleMapClick = useCallback((e) => {         │
+    │      |                          ^                            │
+    │   36 |     setPosition(e.latlng);                            │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/pages/Checkout/CheckoutAddress.jsx:148
+    ┌──────────────────────────────────────────────────────────────┐
+    │   147 | const CheckoutAddress = () => {                      │
+    │ > 148 |   const handleLocationSelected = useCallback((coord[0m… │
+    │       |                                  ^                   │
+    │   149 |     console.log("Selected delivery location:", coor[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/pages/Menu/MenuPage.jsx:26
+    ┌──────────────────────────────────────────────────────────────┐
+    │   25 |                                                       │
+    │ > 26 |   const categories = useMemo(() => {                  │
+    │      |                      ^                                │
+    │   27 |     return ["ALL", ...new Set(products.map((p) => p.[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/pages/Menu/MenuPage.jsx:30
+    ┌──────────────────────────────────────────────────────────────┐
+    │   29 |                                                       │
+    │ > 30 |   const filteredProducts = useMemo(() => {            │
+    │      |                            ^                          │
+    │   31 |     if (activeCategory === "ALL") return products;    │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Performance: await inside a loop
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/async-await-in-loop
+    → Collect the items, then use `await
+    Promise.all(items.map(...))` so independent work runs at
+    the same time
+
+    functions/checkout_check.js:36
+    ┌──────────────────────────────────────────────────────────────┐
+    │   35 |       const docRef = db.collection("products").doc(i[0m… │
+    │ > 36 |       const docSnap = await docRef.get();             │
+    │      |                       ^                               │
+    │   37 |                                                       │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Performance: Unstable context provider value ×4
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/jsx-no-constructed-context-values
+    → Wrap the context value in `useMemo`, or move it outside
+    the component.
+
+    src/hooks/useCart.jsx:16
+    ┌──────────────────────────────────────────────────────────────┐
+    │   15 |     <CartContext.Provider                             │
+    │ > 16 |       value={{ isCartOpen, toggleCart, openCart, clo[0m… │
+    │      |       ^                                               │
+    │   17 |     >                                                 │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/hooks/useDetail.jsx:14
+    ┌──────────────────────────────────────────────────────────────┐
+    │   13 |     <DetailContext.Provider                           │
+    │ > 14 |       value={{ isDetailOpen, toggleDetail, openDetai[0m… │
+    │      |       ^                                               │
+    │   15 |     >                                                 │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/hooks/useCheckout.jsx:17
+    ┌──────────────────────────────────────────────────────────────┐
+    │   16 |     <CheckoutContext.Provider                         │
+    │ > 17 |       value={{ isCheckoutOpen, toggleCheckout, openC[0m… │
+    │      |       ^                                               │
+    │   18 |     >                                                 │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/hooks/useCustomer.jsx:12
+    ┌──────────────────────────────────────────────────────────────┐
+    │   11 |     <CustomerContext.Provider                         │
+    │ > 12 |       value={{ isCustomerOpen, toggleCustomer, openC[0m… │
+    │      |       ^                                               │
+    │   13 |     >                                                 │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Bugs: Unknown DOM property
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/no-unknown-property
+    → Use the prop name React expects, like `className`,
+    `htmlFor`, or `tabIndex`.
+
+    src/pages/Home/Hero.jsx:14
+    ┌──────────────────────────────────────────────────────────────┐
+    │   13 |                 <h1                                   │
+    │ > 14 |                     className=" text-[10dvw] font-bo[0m… │
+    │      |                                                     [0m… │
+    │   15 |                 >                                     │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Accessibility: Control missing accessible label ×9
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/control-has-associated-label
+    → Give every interactive control a label screen readers can
+    read.
+
+    src/pages/Checkout/CheckoutPayment.jsx:6-14
+    ┌──────────────────────────────────────────────────────────────┐
+    │    5 |     <div className="flex flex-col gap-3">             │
+    │ >  6 |         <datalist id="payment-methods">               │
+    │ >  7 |             <option value="PayPal" />                 │
+    │ >  8 |             <option value="Credit Card" />            │
+    │ >  9 |             <option value="Apple Pay" />              │
+    │ > 10 |             <option value="Google Pay" />             │
+    │ > 11 |             <option value="Bitcoin" />                │
+    │ > 12 |             <option value="Cash" />                   │
+    │ > 13 |             <option value="Other" />                  │
+    │ > 14 |             <option value="None" />                   │
+    │   15 |         </datalist>                                   │
+    └──────────────────────────────────────────────────────────────┘
+
+  ✗ Performance: React Compiler can't optimize this
+    → Error: Calling setState synchronously within an effect
+    can trigger cascading renders
+    
+    Effects are intended to synchronize state between React and
+    external systems such as manually updating the DOM, state
+    management libraries, or other platform APIs. In general,
+    the body of an effect should do one or both of the
+    following:
+    * Update external systems with the latest state from React.
+    * Subscribe for updates from some external system, calling
+    setState in a callback function when external state changes.
+    
+    Calling setState synchronously within an effect body causes
+    cascading renders that can hurt performance, and is not
+    recommended.
+    (https://react.dev/learn/you-might-not-need-an-effect).
+    
+      15 |     if (totalCount === 0) return;
+      16 |
+    > 17 |     setAnimateTotal(true);
+    |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly
+    within an effect
+      18 |
+      19 |     const timer = setTimeout(() => {
+      20 |       setAnimateTotal(false);
+
+    src/components/cart/CartButton.jsx:17
+    ┌──────────────────────────────────────────────────────────────┐
+    │   16 |                                                       │
+    │ > 17 |     setAnimateTotal(true);                            │
+    │      |     ^                                                 │
+    │   18 |                                                       │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Bugs: Multiple setState calls in one effect
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/no-cascading-set-state
+    → Combine into useReducer: `const [state, dispatch] =
+    useReducer(reducer, initialState)`
+
+    src/components/cart/CartButton.jsx:14
+    ┌──────────────────────────────────────────────────────────────┐
+    │   13 |                                                       │
+    │ > 14 |   useEffect(() => {                                   │
+    │      |   ^                                                   │
+    │   15 |     if (totalCount === 0) return;                     │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Accessibility: Interaction on static element
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/no-static-element-interactions
+    → Give clickable static elements a `role`, or use a button
+    or link.
+
+    src/components/menu/Products.jsx:6
+    ┌──────────────────────────────────────────────────────────────┐
+    │   5 |   return (                                             │
+    │ > 6 |     <div                                               │
+    │     |      ^                                                 │
+    │   7 |       className="bg-card rounded-md flex flex-col h-m[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Maintainability: deslop/unused-file ×6
+    → Delete the file if it is truly unreachable, or import it
+    from an entry point.
+
+    functions/checkout_check.js
+
+    src/hooks/useCustomer.jsx
+
+    src/services/map.service.js
+
+    src/store/language.store.js
+
+    src/utils/storageHandler.js
+
+    test.js
+
+  ⚠ Bugs: Button missing explicit type ×8
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/button-has-type
+    → Always set a `type` on a `<button>`: `type="button"`,
+    `"submit"`, or `"reset"`.
+
+    src/components/cart/CartItem.jsx:27
+    ┌──────────────────────────────────────────────────────────────┐
+    │   26 |       {/* Remove */}                                  │
+    │ > 27 |       <button                                         │
+    │      |        ^                                              │
+    │   28 |         onClick={() => removeProduct(item.id)}        │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/components/productDetails/Detail.jsx:14
+    ┌──────────────────────────────────────────────────────────────┐
+    │   13 |     <div className="flex items-center justify-betwee[0m… │
+    │ > 14 |       <button                                         │
+    │      |        ^                                              │
+    │   15 |         aria-label="Close detail"                     │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/components/productDetails/Detail.jsx:68
+
+    src/components/ui/quantifier.jsx:12-15
+    ┌──────────────────────────────────────────────────────────────┐
+    │   11 |                                                       │
+    │ > 12 |             <button className=' bg-black rounded-4xl[0m… │
+    │ > 13 |                 onClick={onDecrease}><MinusIcon clas[0m… │
+    │ > 14 |             <span>{value}</span>                      │
+    │ > 15 |             <button className='  bg-black rounded-4x[0m… │
+    │   16 |                 onClick={onIncrease}><PlusIcon class[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/components/cart/CartDrawer.jsx:29
+    ┌──────────────────────────────────────────────────────────────┐
+    │   28 |     <div className="flex items-center justify-betwee[0m… │
+    │ > 29 |       <button                                         │
+    │      |        ^                                              │
+    │   30 |         onClick={onCartToggle}                        │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/components/cart/CartDrawer.jsx:51
+
+    src/components/cart/CartButton.jsx:36
+    ┌──────────────────────────────────────────────────────────────┐
+    │   35 |           </h1>                                       │
+    │ > 36 |           <button                                     │
+    │      |            ^                                          │
+    │   37 |             onClick={toggleCart}                      │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Performance: State only used in handlers
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/rerender-state-only-in-handlers
+    → Use useRef instead of useState when the value is only set
+    and never shown on screen. `ref.current = ...` updates it
+    without redrawing the component.
+
+    src/components/cart/CartButton.jsx:12
+    ┌──────────────────────────────────────────────────────────────┐
+    │   11 |                                                       │
+    │ > 12 |   const [animateTotal, setAnimateTotal] = useState(f[0m… │
+    │      |         ^                                             │
+    │   13 |                                                       │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Accessibility: Click handler missing keyboard handler
+    Learn more: https://www.react.doctor/docs/rules/react-doctor/click-events-have-key-events
+    → Pair `onClick` with a key handler so keyboard users can
+    trigger it.
+
+    src/components/menu/Products.jsx:6
+    ┌──────────────────────────────────────────────────────────────┐
+    │   5 |   return (                                             │
+    │ > 6 |     <div                                               │
+    │     |      ^                                                 │
+    │   7 |       className="bg-card rounded-md flex flex-col h-m[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Maintainability: deslop/unused-export ×12
+    → Drop the `export` keyword (or remove the declaration) if
+    no other module uses this symbol.
+
+    src/firebaseConfig.js:19-22
+    ┌──────────────────────────────────────────────────────────────┐
+    │   18 | export const db = getFirestore(app);                  │
+    │ > 19 | export const auth = getAuth(app);                     │
+    │ > 20 | export const storage = getStorage(app);               │
+    │ > 21 | export const functions = getFunctions(app);           │
+    │ > 22 | export default app;                                   │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/pages/Checkout/CheckoutAddress.jsx:46
+    ┌──────────────────────────────────────────────────────────────┐
+    │   45 |                                                       │
+    │ > 46 | export function DeliveryMap({ onLocationSelected }) { │
+    │      |       ^                                               │
+    │   47 |   const [position, setPosition] = useState(null);     │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/schemes/templates.ts:50
+    ┌──────────────────────────────────────────────────────────────┐
+    │   49 |                                                       │
+    │ > 50 | export const productDefaults: Product = {             │
+    │      |             ^                                         │
+    │   51 |   image: "",                                          │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/schemes/templates.ts:63
+    ┌──────────────────────────────────────────────────────────────┐
+    │   62 |                                                       │
+    │ > 63 | export const productRequiredFields: (keyof Product)[[0m… │
+    │      |             ^                                         │
+    │   64 |   "image",                                            │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/schemes/templates.ts:84
+    ┌──────────────────────────────────────────────────────────────┐
+    │   83 |                                                       │
+    │ > 84 | export const reviewDefaults: Review = {               │
+    │      |             ^                                         │
+    │   85 |   reviewer: "",                                       │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/schemes/templates.ts:91
+    ┌──────────────────────────────────────────────────────────────┐
+    │   90 |                                                       │
+    │ > 91 | export const reviewRequiredFields: (keyof Review)[] [0m… │
+    │      |             ^                                         │
+    │   92 |   "reviewer",                                         │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/schemes/templates.ts:98
+    ┌──────────────────────────────────────────────────────────────┐
+    │   97 |                                                       │
+    │ > 98 | export function createReview(data: Partial<Review> =[0m… │
+    │      |       ^                                               │
+    │   99 |   return createFromTemplate(reviewDefaults, reviewRe[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/services/product.service.js:12
+    ┌──────────────────────────────────────────────────────────────┐
+    │   11 |                                                       │
+    │ > 12 | export async function getProductsRaw() {              │
+    │      |       ^                                               │
+    │   13 |   const querySnapshot = await getDocs(productsCollec[0m… │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/services/product.service.js:41
+    ┌──────────────────────────────────────────────────────────────┐
+    │   40 |                                                       │
+    │ > 41 | export async function updateProduct(productId, updat[0m… │
+    │      |       ^                                               │
+    │   42 |     try {                                             │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/services/product.service.js:52
+    ┌──────────────────────────────────────────────────────────────┐
+    │   51 |                                                       │
+    │ > 52 | export async function deleteProduct(productId) {      │
+    │      |       ^                                               │
+    │   53 |     try {                                             │
+    └──────────────────────────────────────────────────────────────┘
+
+    src/services/reviews.service.js:4
+    ┌──────────────────────────────────────────────────────────────┐
+    │   3 |                                                        │
+    │ > 4 | export const reviewsCollection = collection(db, 'revi[0m… │
+    │     |             ^                                          │
+    │   5 |                                                        │
+    └──────────────────────────────────────────────────────────────┘
+
+  ⚠ Maintainability: deslop/unused-dependency ×2
+    → Remove the dependency from package.json if it is
+    genuinely unused.
+
+    package.json
+
+  ⚠ Maintainability: deslop/unused-dev-dependency
+    → Remove the dependency from package.json if it is
+    genuinely unused.
+

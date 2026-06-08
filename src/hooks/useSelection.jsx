@@ -1,6 +1,6 @@
 import { createContext, useState,useEffect } from "react";
 import { createCustomContext } from "../utils/createContext";
-const CartContext = createContext(null);
+const selectionContext = createContext(null);
 
 const SelectionProvider = ({ children }) => {
 const localStorageKey = "SelectedProducts";
@@ -98,12 +98,12 @@ const [selectedProducts, setSelectedProducts] = useState(
   };
 
   return (
-    <CartContext.Provider value={value}>
+    <selectionContext.Provider value={value}>
       {children}
-    </CartContext.Provider>
+    </selectionContext.Provider>
   );
 }
 
-const useSelection = () =>createCustomContext(CartContext);
+const useSelection = () =>createCustomContext(selectionContext);
 
 export { SelectionProvider, useSelection };

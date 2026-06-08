@@ -16,6 +16,7 @@ const CheckoutCustomerDetails = () => {
         <input
           type="text"
           placeholder="John Doe"
+          aria-label="Enter your full name"
           className="focus:outline-none"
         />
       </div>

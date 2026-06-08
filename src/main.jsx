@@ -8,22 +8,25 @@ import { SelectionProvider } from './hooks/useSelection.jsx'
 import { CheckoutProvider } from './hooks/useCheckout'
 import { DetailProvider } from './hooks/useDetail'
 import { StrictMode } from 'react'
+import { OrderProvider } from './hooks/useOrders'
 
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
-    <BrowserRouter>
-    <CheckoutProvider>
-     <ProductsProvider>
-        <CartProvider>
-            <DetailProvider>
-            <SelectionProvider>
-      <App />
-      </SelectionProvider>
-      </DetailProvider>
-      </CartProvider>
-    </ProductsProvider>
-    </CheckoutProvider>
-    </BrowserRouter>
+        <BrowserRouter>
+            <CheckoutProvider>
+                <ProductsProvider>
+                    <CartProvider>
+                        <DetailProvider>
+                            <SelectionProvider>
+                                <OrderProvider>
+                                    <App />
+                                </OrderProvider>
+                            </SelectionProvider>
+                        </DetailProvider>
+                    </CartProvider>
+                </ProductsProvider>
+            </CheckoutProvider>
+        </BrowserRouter>
     </StrictMode>
 )

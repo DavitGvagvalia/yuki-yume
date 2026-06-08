@@ -12,7 +12,6 @@ const ProductsProvider = ({ children }) => {
       (async () => {
         const productData = await fetcherHandler("products", getProducts);
         setProducts(productData);
-        console.log("Products fetched:", productData);
       })()
     },[])
   const value = { products };
