@@ -11,6 +11,62 @@ const ORDER_STATUSES = {
 	REJECTED: 'rejected'
 };
 
+function getOrderDate(order) {
+	const orderDate = order.createdAt || order.date;
+
+	if (!orderDate) {
+		return null;
+	}
+
+	if (typeof orderDate.toDate === 'function') {
+		return orderDate.toDate();
+	}
+
+	if (typeof orderDate.toMillis === 'function') {
+		return new Date(orderDate.toMillis());
+	}
+
+	if (orderDate instanceof Date) {
+		return orderDate;
+	}
+
+	const parsedDate = new Date(orderDate);
+
+	return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function isOrderFromToday(order) {
+	const orderDate = getOrderDate(order);
+
+	if (!orderDate) {
+		return false;
+	}
+
+	const today = new Date();
+
+	return (
+		orderDate.getFullYear() === today.getFullYear() &&
+		orderDate.getMonth() === today.getMonth() &&
+		orderDate.getDate() === today.getDate()
+	);
+}
+
+function formatOrderDate(order) {
+	const orderDate = getOrderDate(order);
+
+	if (!orderDate) {
+		return 'No date';
+	}
+
+	return orderDate.toLocaleString([], {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+}
+
 const OrderButtons = ({ order }) => {
 	const { changeStatus } = useOrder();
 
@@ -63,11 +119,11 @@ const OrderButtons = ({ order }) => {
 
 const OrderCard = ({ order }) => {
 	return (
-		<div className="flex flex-col gap-1 p-2 bg-card rounded min-w-[350px]">
+		<div className="flex flex-col gap-2 p-3 bg-card border border-border rounded min-w-[280px]">
 			<h3 className="text-md font-bold">{order.name}</h3>
 
-			<p className="text-sm text-gray-500">
-				{order.date}
+			<p className="text-sm text-text-secondary">
+				{formatOrderDate(order)}
 			</p>
 
 			<p className="text-sm">
@@ -85,14 +141,20 @@ const OrderCard = ({ order }) => {
 
 const StatusColumn = ({ orders, name }) => {
 	return (
-		<div className="flex flex-col gap-3 p-4 bg-surface rounded-lg w-full">
-			<h2 className="text-xl font-bold">
-				{name} ({orders.length})
-			</h2>
+		<div className="flex min-h-[420px] flex-col gap-3 rounded-lg border border-border bg-surface p-4">
+			<div className="flex items-center justify-between gap-3">
+				<h2 className="text-xl font-bold">
+					{name}
+				</h2>
 
-			<div className="flex overflow-auto gap-3 p-4 bg-surface rounded h-full">
+				<span className="rounded bg-card px-2 py-1 text-sm font-semibold">
+					{orders.length}
+				</span>
+			</div>
+
+			<div className="flex flex-1 flex-col gap-3 overflow-auto rounded bg-background/40 p-3">
 				{orders.length === 0 ? (
-					<p className="text-sm text-gray-500">No orders</p>
+					<p className="text-sm text-text-secondary">No orders</p>
 				) : (
 					orders.map(order => (
 						<OrderCard key={order.id} order={order} />
@@ -105,38 +167,63 @@ const StatusColumn = ({ orders, name }) => {
 
 const OrderTracker = ({ groupedOrders }) => {
 	return (
-		<section className="flex flex-col gap-5 w-full rounded-lg mt-40">
+		<section className="grid w-full grid-cols-1 gap-5 lg:grid-cols-2">
 			<StatusColumn orders={groupedOrders.pending} name="Pending" />
 			<StatusColumn orders={groupedOrders.inProgress} name="In Progress" />
-			<StatusColumn orders={groupedOrders.completed} name="Completed" />
-			<StatusColumn orders={groupedOrders.cancelled} name="Cancelled" />
-			<StatusColumn orders={groupedOrders.rejected} name="Rejected" />
 		</section>
 	);
 };
 
-const OrderHistory = ({ orders }) => {
+const ExpandableOrderRow = ({ orders, title, defaultOpen = false }) => {
 	return (
-		<section className="flex flex-col gap-4 p-4 bg-surface rounded-lg w-full">
-			<div className="flex gap-4 items-center">
-				<h1 className="text-2xl font-bold">Order history</h1>
+		<details
+			className="group rounded-lg border border-border bg-surface p-4"
+			open={defaultOpen}
+		>
+			<summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+				<h2 className="text-xl font-bold">{title}</h2>
 
-				<input
-					type="date"
-					aria-label="Filter orders by date"
-					className="p-2 rounded border border-gray-300"
-				/>
-			</div>
+				<div className="flex items-center gap-3">
+					<span className="rounded bg-card px-2 py-1 text-sm font-semibold">
+						{orders.length}
+					</span>
 
-			<div className="flex gap-4 overflow-auto">
+					<span className="text-sm text-text-secondary group-open:hidden">
+						Expand
+					</span>
+
+					<span className="hidden text-sm text-text-secondary group-open:inline">
+						Collapse
+					</span>
+				</div>
+			</summary>
+
+			<div className="mt-4 flex gap-4 overflow-auto pb-2">
 				{orders.length === 0 ? (
-					<p className="text-sm text-gray-500">No orders yet</p>
+					<p className="text-sm text-text-secondary">No orders yet</p>
 				) : (
 					orders.map(order => (
 						<OrderCard key={order.id} order={order} />
 					))
 				)}
 			</div>
+		</details>
+	);
+};
+
+const OrderHistory = ({ completedTodayOrders, historyOrders }) => {
+	return (
+		<section className="flex w-full flex-col gap-4">
+			<ExpandableOrderRow
+				orders={completedTodayOrders}
+				title="Completed today"
+				defaultOpen
+			/>
+
+			<ExpandableOrderRow
+				orders={historyOrders}
+				title="Order history"
+			/>
 		</section>
 	);
 };
@@ -155,12 +242,19 @@ const AdminDashboard = () => {
 	}
 
 	const groupedOrders = useMemo(() => {
+		const historyStatuses = [
+			ORDER_STATUSES.COMPLETED,
+			ORDER_STATUSES.CANCELLED,
+			ORDER_STATUSES.REJECTED
+		];
+
 		return {
 			pending: orders.filter(order => order.status === ORDER_STATUSES.PENDING),
 			inProgress: orders.filter(order => order.status === ORDER_STATUSES.IN_PROGRESS),
-			completed: orders.filter(order => order.status === ORDER_STATUSES.COMPLETED),
-			cancelled: orders.filter(order => order.status === ORDER_STATUSES.CANCELLED),
-			rejected: orders.filter(order => order.status === ORDER_STATUSES.REJECTED)
+			completedToday: orders.filter(order => (
+				order.status === ORDER_STATUSES.COMPLETED && isOrderFromToday(order)
+			)),
+			history: orders.filter(order => historyStatuses.includes(order.status))
 		};
 	}, [orders]);
 
@@ -183,18 +277,25 @@ const AdminDashboard = () => {
 	}
 
 	return (
-		<main className="min-h-screen p-4 flex flex-col gap-15 justify-center items-center">
-			<header className="w-full flex justify-end mt-20">
-				<button
-					type="button"
-					className="px-4 py-2 rounded bg-card border border-border text-text transition hover:border-accent"
-					onClick={handleLogout}
-				>
-					Logout
-				</button>
-			</header>
-			<OrderTracker groupedOrders={groupedOrders} />
-			<OrderHistory orders={orders} />
+		<main className="min-h-screen px-4 py-24">
+			<div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
+				<header className="flex w-full justify-end">
+					<button
+						type="button"
+						className="px-4 py-2 rounded bg-card border border-border text-text transition hover:border-accent"
+						onClick={handleLogout}
+					>
+						Logout
+					</button>
+				</header>
+
+				<OrderTracker groupedOrders={groupedOrders} />
+
+				<OrderHistory
+					completedTodayOrders={groupedOrders.completedToday}
+					historyOrders={groupedOrders.history}
+				/>
+			</div>
 		</main>
 	);
 };
