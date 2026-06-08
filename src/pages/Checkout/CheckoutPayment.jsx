@@ -2,13 +2,20 @@ import React from 'react'
 import { useOrder } from '../../hooks/useOrders.jsx';
 const CheckoutPayment = ({selectedItems,totalPrice}) => {
     const { createNewOrder } = useOrder();
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        createNewOrder({
-            items: selectedItems,
-            total: totalPrice,
+
+        const products = selectedItems.map((item) => (
+            `${item.name} x${item.quantity}`
+        ));
+
+        await createNewOrder({
+            id: crypto.randomUUID(),
+            name: "Checkout customer",
+            products,
+            date: new Date().toISOString(),
+            totalPrice: Number(totalPrice),
             status: "pending",
-            createdAt: new Date(),
         });
     }
   return (
