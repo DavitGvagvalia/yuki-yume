@@ -4,7 +4,6 @@ import MenuPage from './pages/Menu/MenuPage.jsx'
 import AdminPage from './pages/admin_dashboard/admin_dashboard.jsx'
 import AdminLogin from './pages/admin_dashboard/AdminLogin.jsx'
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute.jsx'
-import { OrderProvider } from './hooks/useOrders.jsx'
 function routes() {
   return (
         <Routes>
@@ -15,9 +14,7 @@ function routes() {
                 path="/admin"
                 element={(
                     <ProtectedAdminRoute>
-                        <OrderProvider>
-                            <AdminPage />
-                        </OrderProvider>
+                        <AdminPage />
                     </ProtectedAdminRoute>
                 )}
             />

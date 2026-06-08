@@ -33,8 +33,8 @@ function getOrderTimestamp(order) {
 
 function mapOrderDoc(orderDoc) {
 	return {
-		id: orderDoc.id,
-		...orderDoc.data()
+		...orderDoc.data(),
+		id: orderDoc.id
 	};
 }
 

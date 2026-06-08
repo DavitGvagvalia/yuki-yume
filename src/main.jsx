@@ -7,23 +7,26 @@ import { CartProvider } from './hooks/useCart.jsx'
 import { SelectionProvider } from './hooks/useSelection.jsx'
 import { CheckoutProvider } from './hooks/useCheckout'
 import { DetailProvider } from './hooks/useDetail'
+import { OrderProvider } from './hooks/useOrders.jsx'
 import { StrictMode } from 'react'
 
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
         <BrowserRouter>
-            <CheckoutProvider>
-                <ProductsProvider>
-                    <CartProvider>
-                        <DetailProvider>
-                            <SelectionProvider>
-                                <App />
-                            </SelectionProvider>
-                        </DetailProvider>
-                    </CartProvider>
-                </ProductsProvider>
-            </CheckoutProvider>
+            <OrderProvider>
+                <CheckoutProvider>
+                    <ProductsProvider>
+                        <CartProvider>
+                            <DetailProvider>
+                                <SelectionProvider>
+                                    <App />
+                                </SelectionProvider>
+                            </DetailProvider>
+                        </CartProvider>
+                    </ProductsProvider>
+                </CheckoutProvider>
+            </OrderProvider>
         </BrowserRouter>
     </StrictMode>
 )
