@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useOrder } from '../../hooks/useOrders.jsx';
+import { logoutAdmin } from '../../services/adminAuth.service.js';
 
 const ORDER_STATUSES = {
 	PENDING: 'pending',
@@ -140,11 +142,17 @@ const OrderHistory = ({ orders }) => {
 };
 
 const AdminDashboard = () => {
+	const navigate = useNavigate();
 	const {
 		orderedProducts: orders = [],
 		loading,
 		error
 	} = useOrder();
+
+	async function handleLogout() {
+		await logoutAdmin();
+		navigate('/admin/login', { replace: true });
+	}
 
 	const groupedOrders = useMemo(() => {
 		return {
@@ -176,6 +184,15 @@ const AdminDashboard = () => {
 
 	return (
 		<main className="min-h-screen p-4 flex flex-col gap-15 justify-center items-center">
+			<header className="w-full flex justify-end mt-20">
+				<button
+					type="button"
+					className="px-4 py-2 rounded bg-card border border-border text-text transition hover:border-accent"
+					onClick={handleLogout}
+				>
+					Logout
+				</button>
+			</header>
 			<OrderTracker groupedOrders={groupedOrders} />
 			<OrderHistory orders={orders} />
 		</main>

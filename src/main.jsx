@@ -8,7 +8,6 @@ import { SelectionProvider } from './hooks/useSelection.jsx'
 import { CheckoutProvider } from './hooks/useCheckout'
 import { DetailProvider } from './hooks/useDetail'
 import { StrictMode } from 'react'
-import { OrderProvider } from './hooks/useOrders'
 
 
 createRoot(document.getElementById('root')).render(
@@ -19,9 +18,7 @@ createRoot(document.getElementById('root')).render(
                     <CartProvider>
                         <DetailProvider>
                             <SelectionProvider>
-                                <OrderProvider>
-                                    <App />
-                                </OrderProvider>
+                                <App />
                             </SelectionProvider>
                         </DetailProvider>
                     </CartProvider>

@@ -2,12 +2,25 @@ import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home/Home.jsx'
 import MenuPage from './pages/Menu/MenuPage.jsx'
 import AdminPage from './pages/admin_dashboard/admin_dashboard.jsx'
+import AdminLogin from './pages/admin_dashboard/AdminLogin.jsx'
+import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute.jsx'
+import { OrderProvider } from './hooks/useOrders.jsx'
 function routes() {
   return (
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/menu" element={<MenuPage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+                path="/admin"
+                element={(
+                    <ProtectedAdminRoute>
+                        <OrderProvider>
+                            <AdminPage />
+                        </OrderProvider>
+                    </ProtectedAdminRoute>
+                )}
+            />
         </Routes>
   )
 }
