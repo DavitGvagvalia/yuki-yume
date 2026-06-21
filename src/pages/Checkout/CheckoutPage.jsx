@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import Loader from '../../components/ui/Loader'
 import { useSelection } from '../../hooks/useSelection'
 import { useCart } from '../../hooks/useCart'
@@ -28,13 +28,33 @@ function CheckoutPage() {
     const { isCartOpen, closeCart } = useCart()
     const { isDetailOpen, closeDetail } = useDetail()
   const { selectedProducts,totalPrice} = useSelection()
+  const [user,setUser] = useState(
+    {
+            id: crypto.randomUUID(),
+            name: "",
+            products: [],
+            date: new Date().toISOString(),
+            totalPrice: 0,
+            status: "pending",
+        }
+  )
+
+  useEffect(() => {
+    setUser((currentUser) => ({
+      ...currentUser,
+      products: selectedProducts,
+      totalPrice: Number(totalPrice),
+    }))
+  }, [selectedProducts, totalPrice])
+
+  console.log(user)
   if (!isCheckoutOpen) return null
   return (
     isCheckoutOpen && <main className="min-h-screen h-full bg-background p-2 z-50 fixed top-0 left-0 w-full flex flex-col gap-2 overflow-y-scroll ">
         <CheckoutHeader closeCheckOut={closeCheckout}/>
-        <CheckoutCustomerDetails />
+        <CheckoutCustomerDetails user={user} setUser={setUser}/>
         <CheckoutAddress />
-        <CheckoutPayment  selectedItems={selectedProducts} totalPrice={totalPrice}/>
+        <CheckoutPayment user={user}/>
         
     </main>
   )

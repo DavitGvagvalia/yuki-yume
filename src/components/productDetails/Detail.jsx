@@ -54,7 +54,7 @@ const DetailBody = ({ product }) => {
           </span>
         ))}
       </div>
-      <p className='text-lg font-semibold'>${product.price}</p>
+      <p className='text-lg font-semibold'>{product.price}₾</p>
     </div>
   )
 }

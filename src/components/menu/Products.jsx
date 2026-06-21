@@ -19,7 +19,7 @@ function ProductCard({ product, openDetail, onChoose }) {
         <div className="flex flex-col gap-1 flex-wrap overflow-y-auto">
           <p className="text-xs opacity-70">{product.category}</p>
           <h4>{product.name}</h4>
-          <p className="text-sm">${product.price}</p>
+          <p className="text-sm">{product.price}₾</p>
         </div>
 
         <div className="flex justify-end items-end">
@@ -52,7 +52,7 @@ const Products = ({ products, onChoose }) => {
   return (
     <div className="
     pb-4
-  grid grid-cols-2 gap-4 mt-8
+  grid grid-cols-2 gap-4 mt-8 
   overflow-y-auto
   md:grid-cols-none
   md:grid-flow-col

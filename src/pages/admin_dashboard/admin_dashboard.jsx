@@ -126,6 +126,10 @@ const OrderCard = ({ order }) => {
 				{formatOrderDate(order)}
 			</p>
 
+                {order.products.map(product => {
+                    return <p key={product.id}>{product.name} x{product.quantity}</p>
+                })}
+
 			<p className="text-sm">
 				Total: ${order.totalPrice}
 			</p>

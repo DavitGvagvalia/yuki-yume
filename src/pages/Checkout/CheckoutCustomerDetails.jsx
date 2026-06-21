@@ -3,7 +3,7 @@ import { PhoneIcon, UserIcon } from '@heroicons/react/24/outline'
 import IntlTelInput from '@intl-tel-input/react'
 import 'intl-tel-input/styles'
 
-const CheckoutCustomerDetails = () => {
+const CheckoutCustomerDetails = ({user,setUser}) => {
   const [telephone, setTelephone] = useState('')
 
   return (
@@ -18,6 +18,8 @@ const CheckoutCustomerDetails = () => {
           placeholder="John Doe"
           aria-label="Enter your full name"
           className="focus:outline-none"
+          value={user.name}
+          onChange={(e) => setUser((currentUser) => ({...currentUser, name: e.target.value}))}
         />
       </div>
 
