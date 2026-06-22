@@ -8,6 +8,12 @@ import addProduct, {
 import { logoutAdmin } from '../../services/adminAuth.service.js';
 import { useProducts } from '../../hooks/useProducts.jsx';
 import { parseXlsxProducts } from '../../utils/xlsxProductsParser.js';
+import {
+	createImageFileMap,
+	createSafeImageName,
+	getProductImagePath,
+	uploadProductImage
+} from '../../utils/imageHandler.js';
 
 const EMPTY_FORM = {
 	image: '',
@@ -76,12 +82,13 @@ function ProductList({
 					}`}>
 						<input
 							type="file"
-							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp,image/avif"
 							className="sr-only"
 							disabled={importing}
+							multiple
 							onChange={onBatchUpload}
 						/>
-						{importing ? 'Uploading...' : 'Upload XLSX'}
+						{importing ? 'Uploading...' : 'Upload XLSX + images'}
 					</label>
 
 					<button
@@ -142,10 +149,20 @@ function ProductForm({
 	mode,
 	categories,
 	submitting,
+	imageFile,
 	onChange,
+	onImageChange,
 	onSubmit,
 	onDelete
 }) {
+	let imageUploadPath = '';
+
+	if (imageFile && form.name) {
+		try {
+			imageUploadPath = getProductImagePath(form.name, imageFile);
+		} catch {}
+	}
+
 	return (
 		<form
 			className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-4"
@@ -157,7 +174,7 @@ function ProductForm({
 						{mode === 'create' ? 'Add product' : 'Edit product'}
 					</h2>
 					<p className="text-sm text-text-secondary">
-						Use a Firebase Storage path in the image field, for example products/item.avif.
+						Upload an image to save it in Firebase Storage under products/.
 					</p>
 				</div>
 
@@ -229,14 +246,32 @@ function ProductForm({
 			</div>
 
 			<label className="flex flex-col gap-2 text-sm">
+				<span className="text-text-secondary">Image file</span>
+				<input
+					type="file"
+					accept="image/jpeg,image/png,image/webp,image/avif"
+					onChange={onImageChange}
+					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+				/>
+				{imageUploadPath && (
+					<span className="text-xs text-text-secondary">
+						Will upload as {imageUploadPath}
+					</span>
+				)}
+			</label>
+
+			<label className="flex flex-col gap-2 text-sm">
 				<span className="text-text-secondary">Image path</span>
 				<input
 					type="text"
 					value={form.image}
-					required
+					required={!imageFile}
 					onChange={(event) => onChange('image', event.target.value)}
 					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
 				/>
+				<span className="text-xs text-text-secondary">
+					This is filled automatically after upload. Existing paths can still be edited manually.
+				</span>
 			</label>
 
 			<label className="flex flex-col gap-2 text-sm">
@@ -317,6 +352,7 @@ export default function AdminMenuPage() {
 	const [form, setForm] = useState(EMPTY_FORM);
 	const [submitting, setSubmitting] = useState(false);
 	const [importing, setImporting] = useState(false);
+	const [imageFile, setImageFile] = useState(null);
 	const [message, setMessage] = useState('');
 	const [error, setError] = useState('');
 
@@ -327,6 +363,7 @@ export default function AdminMenuPage() {
 	function handleCreateMode() {
 		setSelectedProduct(null);
 		setForm(EMPTY_FORM);
+		setImageFile(null);
 		setMessage('');
 		setError('');
 	}
@@ -334,6 +371,7 @@ export default function AdminMenuPage() {
 	function handleSelectProduct(product) {
 		setSelectedProduct(product);
 		setForm(productToForm(product));
+		setImageFile(null);
 		setMessage('');
 		setError('');
 	}
@@ -359,6 +397,10 @@ export default function AdminMenuPage() {
 		try {
 			const productData = formToProduct(form);
 
+			if (imageFile) {
+				productData.image = await uploadProductImage(productData.name, imageFile);
+			}
+
 			if (selectedProduct) {
 				await updateProduct(selectedProduct.id, productData);
 				setMessage('Product updated.');
@@ -368,6 +410,7 @@ export default function AdminMenuPage() {
 				setForm(EMPTY_FORM);
 			}
 
+			setImageFile(null);
 			await refreshProducts({ useCache: false });
 		} catch (submitError) {
 			setError(submitError.message || 'Unable to save product.');
@@ -377,9 +420,15 @@ export default function AdminMenuPage() {
 	}
 
 	async function handleBatchUpload(event) {
-		const file = event.target.files?.[0];
+		const files = Array.from(event.target.files || []);
+		const file = files.find((selectedFile) => (
+			selectedFile.name.toLowerCase().endsWith('.xlsx') ||
+			selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+		));
+		const imageFiles = files.filter((selectedFile) => selectedFile !== file);
 
 		if (!file) {
+			setError('Choose one XLSX file.');
 			return;
 		}
 
@@ -389,13 +438,41 @@ export default function AdminMenuPage() {
 
 		try {
 			const parsedProducts = await parseXlsxProducts(file);
+			const imageFileMap = createImageFileMap(imageFiles);
+			const knownProductNames = new Set(
+				products.map((product) => createSafeImageName(product.name))
+			);
+			const uploadProductNames = new Set();
+			let uploadedImages = 0;
+
+			for (const product of parsedProducts) {
+				const safeProductName = createSafeImageName(product.name);
+				const matchingImage = imageFileMap.get(safeProductName);
+
+				if (
+					!safeProductName ||
+					knownProductNames.has(safeProductName) ||
+					uploadProductNames.has(safeProductName)
+				) {
+					continue;
+				}
+
+				uploadProductNames.add(safeProductName);
+
+				if (matchingImage) {
+					product.image = await uploadProductImage(product.name, matchingImage);
+					uploadedImages += 1;
+				}
+			}
+
 			const result = await batchAddProducts(parsedProducts);
 			const skippedCount = result.skipped.length;
 			const invalidCount = result.invalid.length;
+			const unmatchedImages = Math.max(imageFiles.length - uploadedImages, 0);
 
 			await refreshProducts({ useCache: false });
 			setMessage(
-				`Batch upload complete. Added ${result.added} product${result.added === 1 ? '' : 's'}, skipped ${skippedCount} duplicate${skippedCount === 1 ? '' : 's'}, invalid ${invalidCount} row${invalidCount === 1 ? '' : 's'}.`
+				`Batch upload complete. Added ${result.added} product${result.added === 1 ? '' : 's'}, uploaded ${uploadedImages} image${uploadedImages === 1 ? '' : 's'}, skipped ${skippedCount} duplicate${skippedCount === 1 ? '' : 's'}, invalid ${invalidCount} row${invalidCount === 1 ? '' : 's'}, unmatched images ${unmatchedImages}.`
 			);
 		} catch (uploadError) {
 			setError(uploadError.message || 'Unable to upload XLSX file.');
@@ -497,7 +574,9 @@ export default function AdminMenuPage() {
 							mode={selectedProduct ? 'edit' : 'create'}
 							categories={categories}
 							submitting={submitting}
+							imageFile={imageFile}
 							onChange={updateField}
+							onImageChange={(event) => setImageFile(event.target.files?.[0] || null)}
 							onSubmit={handleSubmit}
 							onDelete={handleDelete}
 						/>
