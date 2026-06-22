@@ -1,6 +1,14 @@
-import { createProduct } from '../schemes/templates.ts';
+import { createProduct, productDefaults } from '../schemes/templates.ts';
 import { db} from '../firebaseConfig.js';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc,
+  writeBatch
+} from 'firebase/firestore';
 import { attachImage } from '../utils/imageHandler.js';
 
 const productsCollection = collection(db, 'products');
@@ -12,6 +20,10 @@ function clearProductsCache() {
   }
 
   productsCacheKeys.forEach((key) => localStorage.removeItem(key));
+}
+
+function normalizeProductName(name) {
+  return String(name || '').trim().toLowerCase();
 }
 
 export async function getProductsRaw() {
@@ -68,3 +80,68 @@ export async function deleteProduct(productId) {
     }
 }
 
+export async function batchAddProducts(products) {
+  try {
+    const existingProducts = await getProductsRaw();
+    const knownProductNames = new Set(
+      existingProducts.map((product) => normalizeProductName(product.name))
+    );
+    const skipped = [];
+    const invalid = [];
+    const productsToAdd = [];
+
+    products.forEach((product, index) => {
+      const productName = normalizeProductName(product.name);
+
+      if (!productName) {
+        invalid.push({ row: index + 2, reason: 'Missing product name' });
+        return;
+      }
+
+      if (knownProductNames.has(productName)) {
+        skipped.push(product.name);
+        return;
+      }
+
+      knownProductNames.add(productName);
+      productsToAdd.push({
+        ...productDefaults,
+        ...product,
+        name: product.name.trim(),
+        category: String(product.category || '').trim(),
+        description: String(product.description || '').trim(),
+        image: String(product.image || '').trim(),
+        price: Number(product.price) || 0,
+        preparationTime: Number(product.preparationTime) || 0,
+        ingredients: Array.isArray(product.ingredients) ? product.ingredients : [],
+        available: product.available ?? true,
+        spicy: Boolean(product.spicy),
+        vegetarian: Boolean(product.vegetarian)
+      });
+    });
+
+    for (let start = 0; start < productsToAdd.length; start += 500) {
+      const batch = writeBatch(db);
+
+      productsToAdd.slice(start, start + 500).forEach((product) => {
+        batch.set(doc(productsCollection), product);
+      });
+
+      await batch.commit();
+    }
+
+    if (productsToAdd.length > 0) {
+      clearProductsCache();
+    }
+
+    return {
+      added: productsToAdd.length,
+      skipped,
+      invalid,
+      total: products.length
+    };
+  } catch (error) {
+    console.error('Error batch adding products:', error);
+    throw error;
+  }
+}

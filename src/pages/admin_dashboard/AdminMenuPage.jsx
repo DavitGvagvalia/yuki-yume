@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import addProduct, {
+	batchAddProducts,
 	deleteProduct,
 	updateProduct
 } from '../../services/product.service.js';
 import { logoutAdmin } from '../../services/adminAuth.service.js';
 import { useProducts } from '../../hooks/useProducts.jsx';
+import { parseXlsxProducts } from '../../utils/xlsxProductsParser.js';
 
 const EMPTY_FORM = {
 	image: '',
@@ -55,19 +57,41 @@ function formToProduct(form) {
 	};
 }
 
-function ProductList({ products, selectedProductId, onSelect, onCreate }) {
+function ProductList({
+	products,
+	selectedProductId,
+	importing,
+	onSelect,
+	onCreate,
+	onBatchUpload
+}) {
 	return (
 		<section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4">
 			<div className="flex items-center justify-between gap-3">
 				<h2 className="text-xl font-bold">Products</h2>
 
-				<button
-					type="button"
-					className="rounded bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover"
-					onClick={onCreate}
-				>
-					Add product
-				</button>
+				<div className="flex flex-wrap justify-end gap-2">
+					<label className={`cursor-pointer rounded border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:border-accent ${
+						importing ? 'pointer-events-none opacity-60' : ''
+					}`}>
+						<input
+							type="file"
+							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							className="sr-only"
+							disabled={importing}
+							onChange={onBatchUpload}
+						/>
+						{importing ? 'Uploading...' : 'Upload XLSX'}
+					</label>
+
+					<button
+						type="button"
+						className="rounded bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover"
+						onClick={onCreate}
+					>
+						Add product
+					</button>
+				</div>
 			</div>
 
 			<div className="flex max-h-[680px] flex-col gap-2 overflow-auto">
@@ -292,6 +316,7 @@ export default function AdminMenuPage() {
 	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [form, setForm] = useState(EMPTY_FORM);
 	const [submitting, setSubmitting] = useState(false);
+	const [importing, setImporting] = useState(false);
 	const [message, setMessage] = useState('');
 	const [error, setError] = useState('');
 
@@ -348,6 +373,35 @@ export default function AdminMenuPage() {
 			setError(submitError.message || 'Unable to save product.');
 		} finally {
 			setSubmitting(false);
+		}
+	}
+
+	async function handleBatchUpload(event) {
+		const file = event.target.files?.[0];
+
+		if (!file) {
+			return;
+		}
+
+		setImporting(true);
+		setMessage('');
+		setError('');
+
+		try {
+			const parsedProducts = await parseXlsxProducts(file);
+			const result = await batchAddProducts(parsedProducts);
+			const skippedCount = result.skipped.length;
+			const invalidCount = result.invalid.length;
+
+			await refreshProducts({ useCache: false });
+			setMessage(
+				`Batch upload complete. Added ${result.added} product${result.added === 1 ? '' : 's'}, skipped ${skippedCount} duplicate${skippedCount === 1 ? '' : 's'}, invalid ${invalidCount} row${invalidCount === 1 ? '' : 's'}.`
+			);
+		} catch (uploadError) {
+			setError(uploadError.message || 'Unable to upload XLSX file.');
+		} finally {
+			event.target.value = '';
+			setImporting(false);
 		}
 	}
 
@@ -432,8 +486,10 @@ export default function AdminMenuPage() {
 						<ProductList
 							products={products}
 							selectedProductId={selectedProduct?.id}
+							importing={importing}
 							onSelect={handleSelectProduct}
 							onCreate={handleCreateMode}
+							onBatchUpload={handleBatchUpload}
 						/>
 
 						<ProductForm
