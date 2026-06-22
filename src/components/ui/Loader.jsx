@@ -1,5 +1,5 @@
 import React from 'react'
-import sushi from '../../../assets/images/loading.svg'
+import sushi from './assets/images/loading.svg'
 function Loader({ loading }) {
     // if (!loading) return null
     return (
