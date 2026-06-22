@@ -1,13 +1,17 @@
 import {
   CheckCircleIcon,
   ClockIcon,
-  HomeIcon,
   ReceiptPercentIcon,
+  TableCellsIcon,
 } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const OrderSuccess = () => {
   const waitTime = 10;
+  const { state } = useLocation();
+  const order = state?.order;
+  const table = order?.table;
+  const tableLabel = table ? `Table ${table}` : "Table unavailable";
 
   return (
     <main className="min-h-screen [background-image:var(--background-image-menu)] bg-cover bg-center px-4 py-16 text-text">
@@ -25,8 +29,9 @@ const OrderSuccess = () => {
               Thank you for your order
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-text-secondary md:text-base">
-              The kitchen received your order and is preparing it now. Please
-              stay nearby so we can serve it fresh.
+              The kitchen received your order
+              {table ? ` from table ${table}` : ""} and is preparing it now.
+              Please stay nearby so we can serve it fresh.
             </p>
           </div>
 
@@ -48,10 +53,10 @@ const OrderSuccess = () => {
             </div>
 
             <div className="rounded-md border border-border bg-card p-4">
-              <HomeIcon className="mb-3 h-7 w-7 text-accent" />
-              <p className="text-sm text-muted">Next step</p>
+              <TableCellsIcon className="mb-3 h-7 w-7 text-accent" />
+              <p className="text-sm text-muted">Ordered from</p>
               <p className="mt-1 text-lg font-semibold text-text">
-                Wait at your table
+                {tableLabel}
               </p>
             </div>
           </div>

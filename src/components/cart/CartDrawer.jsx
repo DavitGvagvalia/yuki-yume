@@ -67,13 +67,20 @@ const CartFooter = ({ totalPrice,selectedProducts,toggleCart,clearSelection }) =
       products: selectedProducts,
       totalPrice: Number(totalPrice),
     }))
-  }, [selectedProducts])
+  }, [selectedProducts, totalPrice])
 
 
   const handleOrder = async (e) => {
     e.preventDefault();
-    await createNewOrder(user);
-    navigate(`/order/success`)
+    const orderId = await createNewOrder(user);
+    navigate(`/order/success`, {
+      state: {
+        order: {
+          ...user,
+          orderId,
+        },
+      },
+    })
     toggleCart()
     clearSelection()
     
