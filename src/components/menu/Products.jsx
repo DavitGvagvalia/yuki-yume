@@ -56,7 +56,7 @@ const Products = ({ products, onChoose }) => {
   overflow-y-auto
   md:grid-cols-none
   md:grid-flow-col
-  md:auto-cols-[40vw]
+  md:auto-cols-[30vw]
   md:overflow-x-auto
   md:overflow-y-hidden
 ">

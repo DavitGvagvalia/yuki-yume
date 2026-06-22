@@ -65,8 +65,11 @@ function formToProduct(form) {
 
 function ProductList({
 	products,
+	totalProducts,
+	searchTerm,
 	selectedProductId,
 	importing,
+	onSearchChange,
 	onSelect,
 	onCreate,
 	onBatchUpload
@@ -100,6 +103,20 @@ function ProductList({
 					</button>
 				</div>
 			</div>
+
+			<label className="flex flex-col gap-2 text-sm">
+				<span className="text-text-secondary">Search products</span>
+				<input
+					type="search"
+					value={searchTerm}
+					placeholder="Search by name, category, ingredients..."
+					onChange={(event) => onSearchChange(event.target.value)}
+					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+				/>
+				<span className="text-xs text-text-secondary">
+					Showing {products.length} of {totalProducts} products.
+				</span>
+			</label>
 
 			<div className="flex max-h-[680px] flex-col gap-2 overflow-auto">
 				{products.length === 0 ? (
@@ -355,10 +372,37 @@ export default function AdminMenuPage() {
 	const [imageFile, setImageFile] = useState(null);
 	const [message, setMessage] = useState('');
 	const [error, setError] = useState('');
+	const [searchTerm, setSearchTerm] = useState('');
 
 	const categories = useMemo(() => {
 		return [...new Set(products.map((product) => product.category).filter(Boolean))];
 	}, [products]);
+
+	const filteredProducts = useMemo(() => {
+		const query = searchTerm.trim().toLowerCase();
+
+		if (!query) {
+			return products;
+		}
+
+		return products.filter((product) => {
+			const ingredients = Array.isArray(product.ingredients)
+				? product.ingredients.join(' ')
+				: '';
+			const searchableValue = [
+				product.name,
+				product.category,
+				product.description,
+				ingredients,
+				product.price
+			]
+				.filter((value) => value !== undefined && value !== null)
+				.join(' ')
+				.toLowerCase();
+
+			return searchableValue.includes(query);
+		});
+	}, [products, searchTerm]);
 
 	function handleCreateMode() {
 		setSelectedProduct(null);
@@ -561,9 +605,12 @@ export default function AdminMenuPage() {
 				) : (
 					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,380px)_1fr]">
 						<ProductList
-							products={products}
+							products={filteredProducts}
+							totalProducts={products.length}
+							searchTerm={searchTerm}
 							selectedProductId={selectedProduct?.id}
 							importing={importing}
+							onSearchChange={setSearchTerm}
 							onSelect={handleSelectProduct}
 							onCreate={handleCreateMode}
 							onBatchUpload={handleBatchUpload}
