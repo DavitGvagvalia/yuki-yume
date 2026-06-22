@@ -9,7 +9,7 @@ export default function CartItem({ item }) {
       <img
         src={item.imageUrl}
         alt={item.name}
-        className="w-16 h-16 rounded-md object-cover"
+        className="aspect-square w-16 rounded-md object-cover"
       />
 
       <div className="flex-1">

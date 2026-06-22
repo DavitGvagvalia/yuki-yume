@@ -4,7 +4,9 @@ import { useSelection } from "../../hooks/useSelection.jsx";
 import { useCart } from "../../hooks/useCart.jsx";
 import { useCheckout } from "../../hooks/useCheckout.jsx";
 import { Link } from "react-router";
-
+import { useOrder } from "../../hooks/useOrders.jsx";
+import { useLocation, useNavigate } from 'react-router'
+import {useState, useEffect} from "react";
 
 const CartItems = ({ items }) => {
   return (
@@ -15,7 +17,6 @@ const CartItems = ({ items }) => {
         </p>
       ) : (
         items.map((item) => (
-          console.log(item),
           <CartItem key={item.id} item={item} />
         ))
       )}
@@ -42,14 +43,52 @@ const CartHeader = ({ onCartToggle }) => {
   );
 };
 
-const CartFooter = ({ totalPrice,selectedProducts }) => {
-  const { openCheckout } = useCheckout()
+const CartFooter = ({ totalPrice,selectedProducts,toggleCart,clearSelection }) => {
+  const navigate = useNavigate()
+  const path = useLocation().pathname.split("/")
+  const table = path[path.length - 1]
+  const { createNewOrder } = useOrder();
+
+  const [user,setUser] = useState(
+    {
+            id: crypto.randomUUID(),
+            table: table,
+            products: [],
+            date: new Date().toISOString(),
+            totalPrice: 0,
+            status: "pending",
+        }
+  )
+  
+
+  useEffect(() => {
+    setUser((currentUser) => ({
+      ...currentUser,
+      products: selectedProducts,
+      totalPrice: Number(totalPrice),
+    }))
+  }, [selectedProducts])
+
+
+  const handleOrder = async (e) => {
+    e.preventDefault();
+    await createNewOrder(user);
+    navigate(`/order/success`)
+    toggleCart()
+    clearSelection()
+    
+
+  }
+
+
+
+
   return (
     <div className=" py-5 border-t border-border flex justify-center">
       <div className=' w-[90%] bg-background flex  justify-between items-center p-2 rounded-4xl bottom-5 z-9 px-7 border border-border'>
       <h1 className=''>{totalPrice} GEL</h1>
-      <button disabled={selectedProducts.length === 0 } onClick={openCheckout} className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted'>
-         <span>checkout</span>
+      <button disabled={selectedProducts.length === 0 } onClick={handleOrder} className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted'>
+         <span>place order</span>
       </button>
       </div>
     </div>
@@ -58,7 +97,7 @@ const CartFooter = ({ totalPrice,selectedProducts }) => {
 
 export default function CartDrawer() {
   const { isCartOpen, toggleCart  } = useCart()
-  const { selectedProducts,totalPrice} = useSelection();
+  const { selectedProducts,totalPrice, clearSelection} = useSelection();
   if (!isCartOpen) return null;
 
   return (
@@ -69,7 +108,7 @@ export default function CartDrawer() {
         right-0
         top-0
         h-full
-        md:w-100
+        md:w-2/7
         w-screen
         bg-surface
         flex
@@ -80,7 +119,7 @@ export default function CartDrawer() {
     >
       <CartHeader onCartToggle={toggleCart} />
       <CartItems items={selectedProducts} />
-      <CartFooter totalPrice={totalPrice} selectedProducts={selectedProducts}/>
+      <CartFooter totalPrice={totalPrice} selectedProducts={selectedProducts} toggleCart={toggleCart} clearSelection={clearSelection}/>
     </aside>
 
   );

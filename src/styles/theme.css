@@ -9,7 +9,8 @@
 
 @theme {
   --color-background: #0E0E0E;
-  --image-backgournd: linear-gradient(to bottom, #0E0E0E, #1C1C1C);
+  --background-image-background: url('../assets/images/background.png');
+  --background-image-menu: url('../assets/images/bg.png');
   --color-surface: #151515;
   --color-card: #1C1C1C;
 
@@ -31,5 +32,6 @@
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
+
 }
 

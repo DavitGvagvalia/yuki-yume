@@ -94,7 +94,7 @@ const Detail = ({ item, closeDetail }) => {
         flex-col
         shadow-xl
         md:h-screen
-        md:w-[30vw]
+        md:w-2/7
         z-[9]"
     >
       <DetailHeader product={item} closeDetail={closeDetail} />

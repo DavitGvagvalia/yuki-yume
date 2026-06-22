@@ -7,9 +7,9 @@ import { useSelection } from "../../hooks/useSelection.jsx";
 
 const SectionText = () => {
   return (
-    <div className="flex flex-col items-center text-center mb-8">
+    <div className="flex flex-col items-center text-center mb-8 bg-card/50 p-4">
       <h2 className="text-3xl font-bold text-text">Menu</h2>
-      <p className="text-sm text-muted">
+      <p className="text-sm text-text-secondary">
         Choose your favorites
       </p>
     </div>
@@ -35,7 +35,7 @@ export default function MenuPage() {
 
 
   return (
-    <main className="min-h-screen bg-background py-20 px-2">
+    <main className="min-h-screen [background-image:var(--background-image-menu)] bg-repeat-y bg-center bg-cover">
       <SectionText />
       <Categories
         categories={categories}
