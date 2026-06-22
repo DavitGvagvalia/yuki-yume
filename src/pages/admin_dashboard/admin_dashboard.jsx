@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useOrder } from '../../hooks/useOrders.jsx';
 import { logoutAdmin } from '../../services/adminAuth.service.js';
 
@@ -283,7 +283,14 @@ const AdminDashboard = () => {
 	return (
 		<main className="min-h-screen px-4 py-24">
 			<div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
-				<header className="flex w-full justify-end">
+				<header className="flex w-full justify-end gap-3">
+					<Link
+						to="/admin/menu"
+						className="px-4 py-2 rounded bg-card border border-border text-text transition hover:border-accent"
+					>
+						Menu
+					</Link>
+
 					<button
 						type="button"
 						className="px-4 py-2 rounded bg-card border border-border text-text transition hover:border-accent"

@@ -79,13 +79,13 @@ const OrderSuccess = () => {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                to="/menu"
+                to={`/menu/${table}`}
                 className="engage inline-flex flex-1 items-center justify-center rounded-3xl bg-accent px-5 py-3 text-sm font-semibold text-white transition"
               >
                 Back to menu
               </Link>
               <Link
-                to="/"
+                to={`/${table}`}
                 className="inline-flex flex-1 items-center justify-center rounded-3xl border border-border bg-card px-5 py-3 text-sm font-semibold text-text transition hover:border-accent hover:text-accent"
               >
                 Go home
