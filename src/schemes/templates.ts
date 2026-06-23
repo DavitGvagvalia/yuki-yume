@@ -37,7 +37,6 @@ function createFromTemplate<T extends TemplateObject>(
 export type Product = {
   image: string;
   name: string;
-  description: string;
   price: number;
   category: string;
   available: boolean;
@@ -50,7 +49,6 @@ export type Product = {
 export const productDefaults: Product = {
   image: "",
   name: "",
-  description: "",
   price: 0,
   category: "",
   available: true,
@@ -63,7 +61,6 @@ export const productDefaults: Product = {
 export const productRequiredFields: (keyof Product)[] = [
   "image",
   "name",
-  "description",
   "price",
   "image"
 ];

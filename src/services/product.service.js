@@ -109,7 +109,6 @@ export async function batchAddProducts(products) {
         ...product,
         name: product.name.trim(),
         category: String(product.category || '').trim(),
-        description: String(product.description || '').trim(),
         image: String(product.image || '').trim(),
         price: Number(product.price) || 0,
         preparationTime: Number(product.preparationTime) || 0,

@@ -43,7 +43,6 @@ const DetailBody = ({ product }) => {
         </h3>
         <p className='text-sm text-muted'>{product.category}</p>
       </div>
-      <p className='text-base text-muted'>{product.description}</p>
       <div className="flex flex-wrap gap-1 text-sm">
         {product.ingredients.map((ingredient) => (
           <span

@@ -18,7 +18,6 @@ import {
 const EMPTY_FORM = {
 	image: '',
 	name: '',
-	description: '',
 	price: '',
 	category: '',
 	available: true,
@@ -32,7 +31,6 @@ function productToForm(product) {
 	return {
 		image: product.image || '',
 		name: product.name || '',
-		description: product.description || '',
 		price: product.price ?? '',
 		category: product.category || '',
 		available: product.available ?? true,
@@ -49,7 +47,6 @@ function formToProduct(form) {
 	return {
 		image: form.image.trim(),
 		name: form.name.trim(),
-		description: form.description.trim(),
 		price: Number(form.price),
 		category: form.category.trim(),
 		available: form.available,
@@ -292,17 +289,6 @@ function ProductForm({
 			</label>
 
 			<label className="flex flex-col gap-2 text-sm">
-				<span className="text-text-secondary">Description</span>
-				<textarea
-					value={form.description}
-					required
-					rows="4"
-					onChange={(event) => onChange('description', event.target.value)}
-					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
-				/>
-			</label>
-
-			<label className="flex flex-col gap-2 text-sm">
 				<span className="text-text-secondary">Ingredients</span>
 				<input
 					type="text"
@@ -392,7 +378,6 @@ export default function AdminMenuPage() {
 			const searchableValue = [
 				product.name,
 				product.category,
-				product.description,
 				ingredients,
 				product.price
 			]

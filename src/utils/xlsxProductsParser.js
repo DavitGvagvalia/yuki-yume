@@ -160,7 +160,6 @@ function mapProduct(row, headers) {
 	return {
 		image: data.image || '',
 		name: data.name || '',
-		description: data.description || ingredients,
 		price: parseNumber(data.price),
 		category: data.category || '',
 		available: data.available ? parseBoolean(data.available) : true,

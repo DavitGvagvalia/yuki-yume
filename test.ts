@@ -67,7 +67,6 @@ function createClassicRollProduct(product: ProductInput): Product {
   return {
     image: "products/greenDragon.jpeg",
     name: product.name,
-    description: `${product.name} is a classic sushi roll.`,
     price: product.price,
     category: "Classic Rolls",
     available: true,
