@@ -8,9 +8,8 @@
 }
 
 @theme {
-  --color-background: #0E0E0E;
-  --background-image-background: url('../../assets/images/background.png');
-  --background-image-menu: url('../../assets/images/bg.png');
+  --color-background: #3077cf;
+  --background-image-background: url('../../assets/images/background.jpg');
   --color-surface: #151515;
   --color-card: #1C1C1C;
 

@@ -35,7 +35,7 @@ export default function MenuPage() {
 
 
   return (
-    <main className="min-h-screen [background-image:var(--background-image-menu)] bg-repeat-y bg-center bg-cover">
+    <main className="min-h-screen bg-repeat-y bg-center bg-cover">
       <SectionText />
       <Categories
         categories={categories}

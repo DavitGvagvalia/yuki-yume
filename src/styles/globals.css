@@ -20,3 +20,7 @@ body{
   scale: 1.05;
 
 }
+
+.background-image {
+  background-image: var(--background-image-background);
+}
