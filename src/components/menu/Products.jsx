@@ -7,11 +7,11 @@ function ProductCard({ product, openDetail, onChoose }) {
       className="bg-card rounded-md flex flex-col h-max"
       onClick={openDetail}
     >
-      <div className="w-full aspect-square flex justify-center items-center">
+      <div className="w-full flex justify-center items-center">
       <img
         src={product.imageUrl}
         alt={product.name}
-        className=" rounded-md object-cover w-full h-full"
+        className=" rounded-md object-cover aspect-2/1 h-full"
       />
       </div>
 
@@ -52,7 +52,7 @@ const Products = ({ products, onChoose }) => {
   return (
     <div className="
     pb-4
-  grid grid-cols-2 gap-4 mt-8 
+  grid grid-cols-1 gap-4 mt-8 
   overflow-y-auto
   md:grid-cols-none
   md:grid-flow-col
