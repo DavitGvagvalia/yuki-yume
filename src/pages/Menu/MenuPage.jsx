@@ -7,7 +7,7 @@ import { useSelection } from "../../hooks/useSelection.jsx";
 
 const SectionText = () => {
   return (
-    <div className="flex flex-col items-center text-center mb-8 bg-card/50 p-4">
+    <div className="mb-6 flex flex-col items-center border-b border-border bg-panel/85 pb-6 pt-6 text-center backdrop-blur">
       <h2 className="text-3xl font-bold text-text">Menu</h2>
       <p className="text-sm text-text-secondary">
         Choose your favorites
@@ -35,17 +35,19 @@ export default function MenuPage() {
 
 
   return (
-    <main className="min-h-screen bg-repeat-y bg-center bg-cover">
-      <SectionText />
-      <Categories
-        categories={categories}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-      />
-      <Products
-        products={filteredProducts}
-        onChoose={addProduct}
-      />
+    <main className="relative min-h-screen overflow-hidden ">
+      <div className="relative z-1 mx-auto w-full">
+        <SectionText />
+        <Categories
+          categories={categories}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+        />
+        <Products
+          products={filteredProducts}
+          onChoose={addProduct}
+        />
+      </div>
     </main>
   );
 }

@@ -2,8 +2,9 @@
 @import "./theme.css";
 @import "./animations.css";
 
-body{
-  background-color: black;
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 ::-webkit-scrollbar {
@@ -15,10 +16,9 @@ body{
 ::-webkit-scrollbar-thumb {
   background: var(--color-accent);
 }
- .engage:active {
+.engage:active {
   background: var(--color-accent-hover);
   scale: 1.05;
-
 }
 
 .background-image {

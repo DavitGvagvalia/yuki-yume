@@ -26,7 +26,7 @@ const CartItems = ({ items }) => {
 
 const CartHeader = ({ onCartToggle }) => {
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border">
+    <div className="flex items-center justify-between border-b border-border bg-panel px-4 py-4">
       <button
         onClick={onCartToggle}
         aria-label="Close cart"
@@ -91,10 +91,10 @@ const CartFooter = ({ totalPrice,selectedProducts,toggleCart,clearSelection }) =
 
 
   return (
-    <div className=" py-5 border-t border-border flex justify-center">
-      <div className=' w-[90%] bg-background flex  justify-between items-center p-2 rounded-4xl bottom-5 z-9 px-7 border border-border'>
-      <h1 className=''>{totalPrice} GEL</h1>
-      <button disabled={selectedProducts.length === 0 } onClick={handleOrder} className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted'>
+    <div className="flex justify-center border-t border-border bg-panel px-4 py-5">
+      <div className='bottom-5 z-9 flex w-[90%] items-center justify-between rounded-3xl border border-border bg-panel-elevated p-2 px-7'>
+      <h1 className='font-bold text-text'>{totalPrice} GEL</h1>
+      <button disabled={selectedProducts.length === 0 } onClick={handleOrder} className='flex items-center justify-center gap-2 rounded-3xl bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103 disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted'>
          <span>place order</span>
       </button>
       </div>
@@ -117,10 +117,12 @@ export default function CartDrawer() {
         h-full
         md:w-2/7
         w-screen
-        bg-surface
+        bg-panel
         flex
         flex-col
-        shadow-xl
+        border-l
+        border-border
+        shadow-2xl
         z-11
       "
     >

@@ -72,12 +72,12 @@ function ProductList({
 	onBatchUpload
 }) {
 	return (
-		<section className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4">
+		<section className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-4">
 			<div className="flex items-center justify-between gap-3">
 				<h2 className="text-xl font-bold">Products</h2>
 
 				<div className="flex flex-wrap justify-end gap-2">
-					<label className={`cursor-pointer rounded border border-border bg-card px-4 py-2 text-sm font-semibold transition hover:border-accent ${
+					<label className={`cursor-pointer rounded border border-border bg-control px-4 py-2 text-sm font-semibold transition hover:border-accent hover:bg-control-hover ${
 						importing ? 'pointer-events-none opacity-60' : ''
 					}`}>
 						<input
@@ -93,7 +93,7 @@ function ProductList({
 
 					<button
 						type="button"
-						className="rounded bg-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-hover"
+						className="rounded bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
 						onClick={onCreate}
 					>
 						Add product
@@ -108,7 +108,7 @@ function ProductList({
 					value={searchTerm}
 					placeholder="Search by name, category, ingredients..."
 					onChange={(event) => onSearchChange(event.target.value)}
-					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 				/>
 				<span className="text-xs text-text-secondary">
 					Showing {products.length} of {totalProducts} products.
@@ -125,8 +125,8 @@ function ProductList({
 							type="button"
 							className={`flex items-center gap-3 rounded border p-3 text-left transition ${
 								selectedProductId === product.id
-									? 'border-accent bg-card'
-									: 'border-border bg-background/40 hover:border-accent'
+									? 'border-accent bg-control'
+									: 'border-border bg-background/35 hover:border-accent hover:bg-control'
 							}`}
 							onClick={() => onSelect(product)}
 						>
@@ -145,8 +145,8 @@ function ProductList({
 
 							<span className={`rounded px-2 py-1 text-xs ${
 								product.available === false
-									? 'bg-red-500/15 text-red-300'
-									: 'bg-green-500/15 text-green-300'
+									? 'bg-danger-soft text-danger'
+									: 'bg-success-soft text-success'
 							}`}>
 								{product.available === false ? 'Hidden' : 'Available'}
 							</span>
@@ -179,7 +179,7 @@ function ProductForm({
 
 	return (
 		<form
-			className="flex flex-col gap-5 rounded-lg border border-border bg-surface p-4"
+			className="flex flex-col gap-5 rounded-lg border border-border bg-panel p-4"
 			onSubmit={onSubmit}
 		>
 			<div className="flex items-start justify-between gap-3">
@@ -195,7 +195,7 @@ function ProductForm({
 				{mode === 'edit' && (
 					<button
 						type="button"
-						className="rounded border border-red-500 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/10"
+						className="rounded border border-danger px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger-soft"
 						disabled={submitting}
 						onClick={onDelete}
 					>
@@ -212,7 +212,7 @@ function ProductForm({
 						value={form.name}
 						required
 						onChange={(event) => onChange('name', event.target.value)}
-						className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 					/>
 				</label>
 
@@ -224,7 +224,7 @@ function ProductForm({
 						value={form.category}
 						required
 						onChange={(event) => onChange('category', event.target.value)}
-						className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 					/>
 					<datalist id="product-categories">
 						{categories.map((category) => (
@@ -242,7 +242,7 @@ function ProductForm({
 						value={form.price}
 						required
 						onChange={(event) => onChange('price', event.target.value)}
-						className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 					/>
 				</label>
 
@@ -254,7 +254,7 @@ function ProductForm({
 						step="1"
 						value={form.preparationTime}
 						onChange={(event) => onChange('preparationTime', event.target.value)}
-						className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 					/>
 				</label>
 			</div>
@@ -265,7 +265,7 @@ function ProductForm({
 					type="file"
 					accept="image/jpeg,image/png,image/webp,image/avif"
 					onChange={onImageChange}
-					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 				/>
 				{imageUploadPath && (
 					<span className="text-xs text-text-secondary">
@@ -281,7 +281,7 @@ function ProductForm({
 					value={form.image}
 					required={!imageFile}
 					onChange={(event) => onChange('image', event.target.value)}
-					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 				/>
 				<span className="text-xs text-text-secondary">
 					This is filled automatically after upload. Existing paths can still be edited manually.
@@ -295,7 +295,7 @@ function ProductForm({
 					value={form.ingredients}
 					placeholder="Rice, salmon, avocado"
 					onChange={(event) => onChange('ingredients', event.target.value)}
-					className="rounded border border-border bg-card p-3 text-text outline-none focus:border-accent"
+					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 				/>
 			</label>
 
@@ -331,7 +331,7 @@ function ProductForm({
 			<button
 				type="submit"
 				disabled={submitting}
-				className="rounded bg-accent px-4 py-3 font-semibold text-white transition hover:bg-accent-hover disabled:bg-disabled disabled:cursor-not-allowed"
+				className="rounded bg-accent px-4 py-3 font-semibold text-on-accent transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted"
 			>
 				{submitting
 					? 'Saving...'
@@ -552,14 +552,14 @@ export default function AdminMenuPage() {
 					<div className="flex flex-wrap gap-3">
 						<Link
 							to="/admin"
-							className="rounded border border-border bg-card px-4 py-2 text-sm transition hover:border-accent"
+							className="rounded border border-border bg-control px-4 py-2 text-sm transition hover:border-accent hover:bg-control-hover"
 						>
 							Orders
 						</Link>
 
 						<button
 							type="button"
-							className="rounded border border-border bg-card px-4 py-2 text-sm transition hover:border-accent"
+							className="rounded border border-border bg-control px-4 py-2 text-sm transition hover:border-accent hover:bg-control-hover"
 							onClick={handleLogout}
 						>
 							Logout
@@ -568,19 +568,19 @@ export default function AdminMenuPage() {
 				</header>
 
 				{loadError && (
-					<p className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300" role="alert">
+					<p className="rounded border border-danger/40 bg-danger-soft p-3 text-sm text-danger" role="alert">
 						Unable to load products.
 					</p>
 				)}
 
 				{error && (
-					<p className="rounded border border-red-500/40 bg-red-500/10 p-3 text-sm text-red-300" role="alert">
+					<p className="rounded border border-danger/40 bg-danger-soft p-3 text-sm text-danger" role="alert">
 						{error}
 					</p>
 				)}
 
 				{message && (
-					<p className="rounded border border-green-500/40 bg-green-500/10 p-3 text-sm text-green-300" role="status">
+					<p className="rounded border border-success/40 bg-success-soft p-3 text-sm text-success" role="status">
 						{message}
 					</p>
 				)}

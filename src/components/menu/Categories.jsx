@@ -1,15 +1,15 @@
 const Categories = ({ categories, activeCategory, setActiveCategory }) => {
 
   const categoryClassNames = (category) =>
-    `px-4 py-2 rounded flex-shrink-0 whitespace-nowrap transition
+    `flex-shrink-0 rounded-md border px-4 py-2 text-sm font-semibold whitespace-nowrap transition
     ${
       activeCategory === category
-        ? "bg-accent text-black"
-        : "text-text hover:bg-surface"
+        ? "border-accent bg-accent text-on-accent"
+        : "border-border bg-control text-text-secondary hover:border-accent hover:text-text"
     }`;
 
   return (
-    <div className="flex bg-background/40 gap-4 py-2 overflow-x-auto items-center md:justify-center">
+    <div className="flex gap-3 overflow-x-auto border-y border-border bg-panel/70 p-3 backdrop-blur md:justify-center">
 
       {categories.map((category,i) => (
         <button

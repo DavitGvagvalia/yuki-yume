@@ -52,7 +52,7 @@ function AdminLogin() {
 				</div>
 
 				<form
-					className="flex flex-col gap-4 p-5 bg-surface border border-border rounded-lg"
+					className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-5"
 					onSubmit={handleSubmit}
 				>
 					<label className="flex flex-col gap-2 text-sm">
@@ -63,7 +63,7 @@ function AdminLogin() {
 							value={email}
 							onChange={(event) => setEmail(event.target.value)}
 							required
-							className="w-full p-3 rounded bg-card border border-border text-text outline-none focus:border-accent"
+							className="w-full rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 						/>
 					</label>
 
@@ -75,12 +75,12 @@ function AdminLogin() {
 							value={password}
 							onChange={(event) => setPassword(event.target.value)}
 							required
-							className="w-full p-3 rounded bg-card border border-border text-text outline-none focus:border-accent"
+							className="w-full rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 						/>
 					</label>
 
 					{error && (
-						<p className="text-sm text-red-400" role="alert">
+						<p className="rounded border border-danger/40 bg-danger-soft p-3 text-sm text-danger" role="alert">
 							{error}
 						</p>
 					)}
@@ -88,7 +88,7 @@ function AdminLogin() {
 					<button
 						type="submit"
 						disabled={submitting}
-						className="w-full p-3 rounded bg-accent text-white font-semibold transition hover:bg-accent-hover disabled:bg-disabled disabled:cursor-not-allowed"
+						className="w-full rounded bg-accent p-3 font-semibold text-on-accent transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted"
 					>
 						{submitting ? 'Signing in...' : 'Sign in'}
 					</button>

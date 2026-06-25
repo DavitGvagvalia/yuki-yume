@@ -10,7 +10,7 @@ import {Quantifier} from "../ui/quantifier";
 
 const DetailHeader = ({ product, closeDetail }) => {
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border">
+    <div className="flex items-center justify-between border-b border-border bg-panel px-4 py-4">
       <button
         aria-label="Close detail"
         className="text-muted hover:text-text transition"
@@ -33,13 +33,13 @@ const DetailHeader = ({ product, closeDetail }) => {
 
 const DetailBody = ({ product }) => {
   return (
-    <div className='p-4 flex flex-col gap-4'>
-      <img src={product.imageUrl} alt={product.name} className='w-full object-cover rounded-md max-h-[300px]' />
+    <div className='flex flex-col gap-4 p-4'>
+      <img src={product.imageUrl} alt={product.name} className='max-h-[300px] w-full rounded-md border border-border object-cover' />
       <div className='flex flex-col gap-0.5'>
         <h3 className='text-xl font-bold'>
           {product.name}
-          {product.spicy && <span className='text-red-500'>🔥</span>}
-          {product.vegetarian && <span className='text-green-500'>🌱</span>}
+          {product.spicy && <span className='text-danger'>🔥</span>}
+          {product.vegetarian && <span className='text-success'>🌱</span>}
         </h3>
         <p className='text-sm text-muted'>{product.category}</p>
       </div>
@@ -47,7 +47,7 @@ const DetailBody = ({ product }) => {
         {product.ingredients.map((ingredient) => (
           <span
             key={ingredient}
-            className="text-sm bg-accent-muted rounded-md px-2 py-1"
+            className="rounded-md border border-border bg-accent-soft px-2 py-1 text-sm text-text-secondary"
           >
             {ingredient}
           </span>
@@ -64,7 +64,7 @@ const DetailFooter = ({ product }) => {
 
   return (
     <div className='py-5 flex justify-center gap-4 items-center'>
-       {!quantity ? <button className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted' onClick={() => addProduct(product)}>
+       {!quantity ? <button className='flex items-center justify-center gap-2 rounded-3xl bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103 disabled:bg-border disabled:text-muted' onClick={() => addProduct(product)}>
         <span >add to cart</span>
         </button>
         :
@@ -88,10 +88,12 @@ const Detail = ({ item, closeDetail }) => {
         h-full
         overflow-x-auto
         w-screen
-        bg-surface
+        bg-panel
         flex
         flex-col
-        shadow-xl
+        border-l
+        border-border
+        shadow-2xl
         md:h-screen
         md:w-2/7
         z-[9]"

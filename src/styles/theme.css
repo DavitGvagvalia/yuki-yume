@@ -1,36 +1,85 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'arial';
+  font-family: "Arial";
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @theme {
-  --color-background: #3077cf;
-  --background-image-background: url('../../assets/images/background.jpg');
-  --color-surface: #151515;
-  --color-card: #1C1C1C;
+  /* Brand palette */
+  --color-ink: #151515;
+  --color-snow: #ffffff;
+  --color-ice: #d6f1ff;
+  --color-ice-soft: #f4fbff;
+  --color-ice-muted: #e8f6ff;
+  --color-blue: #1b6cd1;
+  --color-blue-soft: #3077cf;
+  --color-blue-ink: #102a43;
+  --color-blue-gray: #48677f;
+  --color-blue-muted: #6f8798;
+  --color-blue-border: #bddff2;
+  --color-blue-disabled: #c7d9e5;
 
-  --color-accent: #3077cf;
-  --color-accent-hover: #1b6cd1;
-  --color-accent-muted: #3077cf;
+  /* App surfaces */
+  --color-background: var(--color-ice-soft);
+  --color-surface: var(--color-ice-muted);
+  --color-card: var(--color-snow);
+  --color-card-hover: var(--color-ice);
 
-  --color-text: #F2EDE4;
-  --color-text-secondary: #CFC8BD;
-  --color-muted: #9A948B;
+  /* Interactive states */
+  --color-accent: var(--color-blue);
+  --color-accent-hover: #1559ae;
+  --color-accent-muted: var(--color-blue-soft);
+  --color-accent-soft: color-mix(in srgb, var(--color-blue) 12%, var(--color-snow));
+  --color-on-accent: var(--color-snow);
+  --color-success: #2f8f67;
+  --color-success-soft: #e4f5ee;
+  --color-danger: #c45151;
+  --color-danger-soft: #fdeaea;
+  --color-info: var(--color-accent-muted);
+  --color-info-soft: var(--color-ice);
 
-  --color-border: #2A2A2A;
-  --color-disabled: #3A3A3A;
+  /* Text */
+  --color-text: var(--color-blue-ink);
+  --color-text-secondary: var(--color-blue-gray);
+  --color-muted: var(--color-blue-muted);
 
-  --font-primary: 'arial', sans-serif;
-  --font-secondary: 'Poppins', sans-serif;
-  --font-heading: 'arial', sans-serif;
+  /* Lines and disabled controls */
+  --color-border: var(--color-blue-border);
+  --color-border-strong: color-mix(in srgb, var(--color-blue) 34%, var(--color-blue-border));
+  --color-disabled: var(--color-blue-disabled);
+
+  /* Component aliases */
+  --color-shell: var(--color-background);
+  --color-panel: var(--color-surface);
+  --color-panel-elevated: var(--color-card);
+  --color-control: var(--color-card);
+  --color-control-hover: var(--color-card-hover);
+  --color-control-active: var(--color-accent);
+  --color-focus: var(--color-ice);
+
+  /* Background images */
+  --background-image-background: linear-gradient(
+    180deg,
+    var(--color-snow) 0%,
+    var(--color-ice-soft) 42%,
+    var(--color-ice) 100%
+  );
+  --background-image-menu: linear-gradient(
+    180deg,
+    var(--color-snow) 0%,
+    var(--color-ice-soft) 48%,
+    var(--color-ice) 100%
+  );
+
+  /* Typography */
+  --font-primary: "Arial", sans-serif;
+  --font-secondary: "Poppins", sans-serif;
+  --font-heading: "Arial", sans-serif;
 
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-slow: 400ms;
-
 }
-

@@ -4,22 +4,32 @@ import Detail from "../productDetails/Detail.jsx";
 function ProductCard({ product, openDetail, onChoose }) {
   return (
     <div
-      className="bg-card rounded-md flex flex-col h-max"
+      className="flex h-max  cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover"
       onClick={openDetail}
     >
       <div className="w-full flex justify-center items-center">
-      <img
-        src={product.imageUrl}
-        alt={product.name}
-        className=" rounded-md object-cover aspect-2/1 h-full"
-      />
+        <img
+          src={product.imageUrl}
+          alt={product.name}
+          className="aspect-2/1 h-full w-full object-cover"
+        />
       </div>
 
-      <div className="p-4 flex flex-col md:flex-row justify-between h-full">
-        <div className="flex flex-col gap-1 flex-wrap overflow-y-auto">
-          <p className="text-xs opacity-70">{product.category}</p>
-          <h4>{product.name}</h4>
-          <p className="text-sm">{product.price}₾</p>
+      <div className="flex h-full flex-col justify-between gap-4 p-4">
+        <div className="flex flex-col gap-3 overflow-y-auto">
+          <p className="text-xs font-semibold uppercase text-muted">{product.category}</p>
+          <h4 className="text-lg font-bold text-text">{product.name}</h4>
+          <div className="flex flex-wrap gap-1.5 text-sm">
+            {product.ingredients.map((ingredient) => (
+              <span
+                key={ingredient}
+                className="rounded-md border border-border bg-accent-soft px-2 py-1 text-xs text-text-secondary"
+              >
+                {ingredient}
+              </span>
+            ))}
+          </div>
+          <p className="text-sm font-semibold text-text">{product.price}₾</p>
         </div>
 
         <div className="flex justify-end items-end">
@@ -29,7 +39,7 @@ function ProductCard({ product, openDetail, onChoose }) {
               e.stopPropagation();
               onChoose();
             }}
-            className="bg-accent text-text rounded-md px-3 py-2 engage transition-transform z-2"
+            className="engage z-2 rounded-md bg-accent px-3 py-2 text-on-accent transition hover:bg-accent-hover active:scale-103"
           >
             <PlusIcon className="w-5 h-5" />
           </button>
@@ -51,14 +61,9 @@ const Products = ({ products, onChoose }) => {
   }
   return (
     <div className="
-    pb-4
-  grid grid-cols-1 gap-4 mt-8 
+  grid grid-cols-1 gap-4 p-6
+  md:grid-cols-3
   overflow-y-auto
-  md:grid-cols-none
-  md:grid-flow-col
-  md:auto-cols-[30vw]
-  md:overflow-x-auto
-  md:overflow-y-hidden
 ">
       {products.map((product) => (
         <ProductCard
@@ -68,15 +73,6 @@ const Products = ({ products, onChoose }) => {
           onChoose={() => onChoose(product)}
         />
       ))}
-
-      {selectedProduct && (
-        <>
-          <Detail
-            item={selectedProduct}
-            closeDetail={closeDetail}
-          />
-        </>
-      )}
     </div>
   );
 };
