@@ -3,6 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import addProduct, {
 	batchAddProducts,
 	deleteProduct,
+	getProductCategoryLabel,
+	getProductCategories,
+	getOrderedCategories,
+	getProductsMatchingCategory,
+	updateCategoryOrder,
 	updateCategoryProductOrder,
 	updateProduct
 } from '../../services/product.service.js';
@@ -20,8 +25,9 @@ const EMPTY_FORM = {
 	image: '',
 	name: '',
 	price: '',
-	category: '',
+	categories: '',
 	sortOrder: '',
+	popular: false,
 	available: true,
 	spicy: false,
 	vegetarian: false,
@@ -29,13 +35,16 @@ const EMPTY_FORM = {
 	ingredients: ''
 };
 
+const POPULAR_CATEGORY = 'POPULAR';
+
 function productToForm(product) {
 	return {
 		image: product.image || '',
 		name: product.name || '',
 		price: product.price ?? '',
-		category: product.category || '',
+		categories: getProductCategories(product).join(', '),
 		sortOrder: product.sortOrder ?? '',
+		popular: Boolean(product.popular),
 		available: product.available ?? true,
 		spicy: Boolean(product.spicy),
 		vegetarian: Boolean(product.vegetarian),
@@ -47,12 +56,20 @@ function productToForm(product) {
 }
 
 function formToProduct(form) {
+	const categories = form.categories
+		.split(',')
+		.map((category) => category.trim())
+		.filter((category) => category.toLowerCase() !== 'popular')
+		.filter(Boolean);
+
 	return {
 		image: form.image.trim(),
 		name: form.name.trim(),
 		price: Number(form.price),
-		category: form.category.trim(),
+		category: categories[0] || '',
+		categories,
 		sortOrder: Number(form.sortOrder || 0),
+		popular: form.popular,
 		available: form.available,
 		spicy: form.spicy,
 		vegetarian: form.vegetarian,
@@ -135,6 +152,7 @@ function ProductList({
 					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 				>
 					<option value="ALL">All categories</option>
+					<option value={POPULAR_CATEGORY}>{POPULAR_CATEGORY}</option>
 					{categories.map((category) => (
 						<option key={category} value={category}>{category}</option>
 					))}
@@ -179,7 +197,8 @@ function ProductList({
 								<span className="min-w-0 flex-1">
 									<span className="block truncate font-semibold">{product.name}</span>
 									<span className="block text-sm text-text-secondary">
-										{product.category || 'No category'} · {product.price}₾
+										{getProductCategoryLabel(product) || 'No category'} · {product.price}₾
+										{product.popular && ' · popular'}
 										{Number.isFinite(Number(product.sortOrder)) && (
 											<> · #{Number(product.sortOrder)}</>
 										)}
@@ -228,6 +247,61 @@ function ProductList({
 					})
 				)}
 			</div>
+		</section>
+	);
+}
+
+function CategoryOrderPanel({
+	categories,
+	orderingCategory,
+	onMoveCategory
+}) {
+	return (
+		<section className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-4">
+			<div>
+				<h2 className="text-xl font-bold">Category order</h2>
+				<p className="text-sm text-text-secondary">
+					This controls the order of category tabs in the customer catalog.
+				</p>
+			</div>
+
+			{categories.length === 0 ? (
+				<p className="text-sm text-text-secondary">No categories found.</p>
+			) : (
+				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+					{categories.map((category, index) => (
+						<div
+							key={category.name}
+							className="flex items-center gap-3 rounded border border-border bg-background/35 p-3"
+						>
+							<span className="rounded bg-control px-2 py-1 text-xs text-text-secondary">
+								#{index + 1}
+							</span>
+							<span className="min-w-0 flex-1 truncate font-semibold">
+								{category.name}
+							</span>
+							<div className="flex gap-1">
+								<button
+									type="button"
+									className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+									disabled={index === 0 || orderingCategory === category.name}
+									onClick={() => onMoveCategory(category.name, -1)}
+								>
+									Up
+								</button>
+								<button
+									type="button"
+									className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+									disabled={index === categories.length - 1 || orderingCategory === category.name}
+									onClick={() => onMoveCategory(category.name, 1)}
+								>
+									Down
+								</button>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
 		</section>
 	);
 }
@@ -291,13 +365,14 @@ function ProductForm({
 				</label>
 
 				<label className="flex flex-col gap-2 text-sm">
-					<span className="text-text-secondary">Category</span>
+					<span className="text-text-secondary">Categories</span>
 					<input
 						type="text"
 						list="product-categories"
-						value={form.category}
+						value={form.categories}
 						required
-						onChange={(event) => onChange('category', event.target.value)}
+						placeholder="Sushi, Rolls, Sets"
+						onChange={(event) => onChange('categories', event.target.value)}
 						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 					/>
 					<datalist id="product-categories">
@@ -389,6 +464,15 @@ function ProductForm({
 				<label className="flex items-center gap-2">
 					<input
 						type="checkbox"
+						checked={form.popular}
+						onChange={(event) => onChange('popular', event.target.checked)}
+					/>
+					<span>Popular</span>
+				</label>
+
+				<label className="flex items-center gap-2">
+					<input
+						type="checkbox"
 						checked={form.available}
 						onChange={(event) => onChange('available', event.target.checked)}
 					/>
@@ -447,20 +531,25 @@ export default function AdminMenuPage() {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [orderCategory, setOrderCategory] = useState('ALL');
 	const [orderingProductId, setOrderingProductId] = useState(null);
+	const [orderingCategory, setOrderingCategory] = useState(null);
 
-	const categories = useMemo(() => {
-		return [...new Set(products.map((product) => product.category).filter(Boolean))];
+	const orderedCategories = useMemo(() => {
+		return getOrderedCategories(products);
 	}, [products]);
 
+	const categories = useMemo(() => (
+		orderedCategories.map((category) => category.name)
+	), [orderedCategories]);
+
 	const productsByCategory = useMemo(() => {
-		return products.filter((product) => product.category === orderCategory);
+		return getProductsMatchingCategory(products, orderCategory);
 	}, [products, orderCategory]);
 
 	const filteredProducts = useMemo(() => {
 		const query = searchTerm.trim().toLowerCase();
 		const categoryProducts = orderCategory === 'ALL'
 			? products
-			: products.filter((product) => product.category === orderCategory);
+			: getProductsMatchingCategory(products, orderCategory);
 
 		if (!query) {
 			return categoryProducts;
@@ -472,7 +561,8 @@ export default function AdminMenuPage() {
 				: '';
 			const searchableValue = [
 				product.name,
-				product.category,
+				getProductCategoryLabel(product),
+				product.popular ? 'popular' : '',
 				ingredients,
 				product.price
 			]
@@ -507,6 +597,27 @@ export default function AdminMenuPage() {
 		}));
 	}
 
+	function getCategoryOrderForName(categoryName) {
+		const existingCategory = orderedCategories.find((category) => (
+			category.name === categoryName
+		));
+
+		if (existingCategory) {
+			return Number.isFinite(Number(existingCategory.categoryOrder))
+				? Number(existingCategory.categoryOrder)
+				: orderedCategories.indexOf(existingCategory) + 1;
+		}
+
+		return orderedCategories.length + 1;
+	}
+
+	function getCategoryOrdersForNames(categoryNames) {
+		return categoryNames.reduce((categoryOrders, categoryName) => {
+			categoryOrders[categoryName] = getCategoryOrderForName(categoryName);
+			return categoryOrders;
+		}, {});
+	}
+
 	async function handleLogout() {
 		await logoutAdmin();
 		navigate('/admin/login', { replace: true });
@@ -527,10 +638,15 @@ export default function AdminMenuPage() {
 
 			if (!selectedProduct && !form.sortOrder) {
 				const matchingCategoryProducts = products.filter((product) => (
-					product.category === productData.category
+					getProductCategories(product).includes(productData.category)
 				));
 				productData.sortOrder = matchingCategoryProducts.length + 1;
 			}
+
+			productData.categoryOrders = getCategoryOrdersForNames(productData.categories);
+			productData.categoryOrder = productData.category
+				? productData.categoryOrders[productData.category] || 0
+				: 0;
 
 			if (selectedProduct) {
 				await updateProduct(selectedProduct.id, productData);
@@ -667,6 +783,35 @@ export default function AdminMenuPage() {
 		}
 	}
 
+	async function handleMoveCategory(categoryName, direction) {
+		const currentIndex = orderedCategories.findIndex((category) => (
+			category.name === categoryName
+		));
+		const nextIndex = currentIndex + direction;
+
+		if (currentIndex === -1 || nextIndex < 0 || nextIndex >= orderedCategories.length) {
+			return;
+		}
+
+		const reorderedCategories = [...orderedCategories];
+		const [movedCategory] = reorderedCategories.splice(currentIndex, 1);
+		reorderedCategories.splice(nextIndex, 0, movedCategory);
+
+		setOrderingCategory(categoryName);
+		setMessage('');
+		setError('');
+
+		try {
+			await updateCategoryOrder(reorderedCategories, products);
+			await refreshProducts({ useCache: false });
+			setMessage('Category order updated.');
+		} catch (orderError) {
+			setError(orderError.message || 'Unable to update category order.');
+		} finally {
+			setOrderingCategory(null);
+		}
+	}
+
 	return (
 		<main className="min-h-screen px-4 py-24">
 			<div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -717,36 +862,44 @@ export default function AdminMenuPage() {
 				{loading ? (
 					<p className="text-lg text-text-secondary">Loading products...</p>
 				) : (
-					<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,380px)_1fr]">
-						<ProductList
-							products={filteredProducts}
-							totalProducts={products.length}
-							categories={categories}
-							orderCategory={orderCategory}
-							searchTerm={searchTerm}
-							selectedProductId={selectedProduct?.id}
-							importing={importing}
-							orderingProductId={orderingProductId}
-							categoryOrderProductIds={productsByCategory.map((product) => product.id)}
-							onOrderCategoryChange={setOrderCategory}
-							onSearchChange={setSearchTerm}
-							onSelect={handleSelectProduct}
-							onCreate={handleCreateMode}
-							onMoveProduct={handleMoveProduct}
-							onBatchUpload={handleBatchUpload}
+					<div className="flex flex-col gap-6">
+						<CategoryOrderPanel
+							categories={orderedCategories}
+							orderingCategory={orderingCategory}
+							onMoveCategory={handleMoveCategory}
 						/>
 
-						<ProductForm
-							form={form}
-							mode={selectedProduct ? 'edit' : 'create'}
-							categories={categories}
-							submitting={submitting}
-							imageFile={imageFile}
-							onChange={updateField}
-							onImageChange={(event) => setImageFile(event.target.files?.[0] || null)}
-							onSubmit={handleSubmit}
-							onDelete={handleDelete}
-						/>
+						<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,380px)_1fr]">
+							<ProductList
+								products={filteredProducts}
+								totalProducts={products.length}
+								categories={categories}
+								orderCategory={orderCategory}
+								searchTerm={searchTerm}
+								selectedProductId={selectedProduct?.id}
+								importing={importing}
+								orderingProductId={orderingProductId}
+								categoryOrderProductIds={productsByCategory.map((product) => product.id)}
+								onOrderCategoryChange={setOrderCategory}
+								onSearchChange={setSearchTerm}
+								onSelect={handleSelectProduct}
+								onCreate={handleCreateMode}
+								onMoveProduct={handleMoveProduct}
+								onBatchUpload={handleBatchUpload}
+							/>
+
+							<ProductForm
+								form={form}
+								mode={selectedProduct ? 'edit' : 'create'}
+								categories={categories}
+								submitting={submitting}
+								imageFile={imageFile}
+								onChange={updateField}
+								onImageChange={(event) => setImageFile(event.target.files?.[0] || null)}
+								onSubmit={handleSubmit}
+								onDelete={handleDelete}
+							/>
+						</div>
 					</div>
 				)}
 			</div>

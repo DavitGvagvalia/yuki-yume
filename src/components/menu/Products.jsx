@@ -1,10 +1,11 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import Detail from "../productDetails/Detail.jsx";
+import { getProductCategoryLabel } from "../../services/product.service.js";
 function ProductCard({ product, openDetail, onChoose }) {
   return (
     <div
-      className="flex h-max  cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover"
+      className="flex  h-[500px] cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover"
       onClick={openDetail}
     >
       <div className="w-full flex justify-center items-center">
@@ -15,9 +16,9 @@ function ProductCard({ product, openDetail, onChoose }) {
         />
       </div>
 
-      <div className="flex h-full flex-col justify-between gap-4 p-4 bg-accent">
+      <div className="flex h-full flex-col justify-between gap-4 p-4 relative">
         <div className="flex flex-col gap-3 overflow-y-auto">
-          <p className="text-xs font-semibold uppercase text-muted">{product.category}</p>
+          <p className="text-xs font-semibold uppercase text-muted">{getProductCategoryLabel(product)}</p>
           <h4 className="text-lg font-bold text-text">{product.name}</h4>
           <div className="flex flex-wrap gap-1.5 text-sm">
             {product.ingredients.map((ingredient) => (
@@ -32,7 +33,7 @@ function ProductCard({ product, openDetail, onChoose }) {
           <p className="text-sm font-semibold text-text">{product.price}₾</p>
         </div>
 
-        <div className="flex justify-end items-end">
+        <div className="flex justify-end items-end absolute bottom-5 right-5 z-1">
           <button
             type="button"
             onClick={(e) => {
@@ -61,6 +62,7 @@ const Products = ({ products, onChoose }) => {
   }
   return (
     <div className="
+    pt-45
   grid grid-cols-1 gap-4 p-6
   md:grid-cols-3
   overflow-y-auto

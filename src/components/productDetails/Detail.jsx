@@ -4,6 +4,7 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useDetail } from '../../hooks/useDetail';
 import { useSelection } from '../../hooks/useSelection';
 import {Quantifier} from "../ui/quantifier";
+import { getProductCategoryLabel } from '../../services/product.service';
 
 
 
@@ -41,7 +42,7 @@ const DetailBody = ({ product }) => {
           {product.spicy && <span className='text-danger'>🔥</span>}
           {product.vegetarian && <span className='text-success'>🌱</span>}
         </h3>
-        <p className='text-sm text-muted'>{product.category}</p>
+        <p className='text-sm text-muted'>{getProductCategoryLabel(product)}</p>
       </div>
       <div className="flex flex-wrap gap-1 text-sm">
         {product.ingredients.map((ingredient) => (

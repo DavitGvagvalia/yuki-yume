@@ -13,6 +13,8 @@ export default defineConfig({
     }),
   ],
   server: {
+    port: 5170,
+    strictPort: true,
     
     proxy: {
       '/get': {

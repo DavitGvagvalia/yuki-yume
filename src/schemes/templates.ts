@@ -39,7 +39,11 @@ export type Product = {
   name: string;
   price: number;
   category: string;
+  categories: string[];
+  categoryOrder: number;
+  categoryOrders: Record<string, number>;
   sortOrder: number;
+  popular: boolean;
   available: boolean;
   spicy: boolean;
   vegetarian: boolean;
@@ -52,7 +56,11 @@ export const productDefaults: Product = {
   name: "",
   price: 0,
   category: "",
+  categories: [],
+  categoryOrder: 0,
+  categoryOrders: {},
   sortOrder: 0,
+  popular: false,
   available: true,
   spicy: false,
   vegetarian: false,

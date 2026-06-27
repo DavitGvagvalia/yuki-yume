@@ -3,6 +3,10 @@ import Categories from "../../components/menu/Categories.jsx";
 import Products from "../../components/menu/Products.jsx";
 import { useProducts } from "../../hooks/useProducts.jsx";
 import { useSelection } from "../../hooks/useSelection.jsx";
+import {
+  getOrderedCategories,
+  getProductsMatchingCategory
+} from "../../services/product.service.js";
 
 
 const SectionText = () => {
@@ -20,16 +24,15 @@ export default function MenuPage() {
   const { products } = useProducts()
   const { addProduct } = useSelection()
 
-  const [activeCategory, setActiveCategory] = useState("ALL");
+  const [activeCategory, setActiveCategory] = useState("POPULAR");
 
 
   const categories = useMemo(() => {
-    return ["ALL", ...new Set(products.map((p) => p.category))];
+    return ["POPULAR", ...getOrderedCategories(products).map((category) => category.name)];
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    if (activeCategory === "ALL") return products;
-    return products.filter((p) => p.category === activeCategory);
+    return getProductsMatchingCategory(products, activeCategory);
   }, [products, activeCategory]);
 
 
@@ -37,7 +40,6 @@ export default function MenuPage() {
   return (
     <main className="relative min-h-screen overflow-hidden ">
       <div className="relative z-1 mx-auto w-full">
-        <SectionText />
         <Categories
           categories={categories}
           activeCategory={activeCategory}

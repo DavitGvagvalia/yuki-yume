@@ -156,13 +156,21 @@ function mapProduct(row, headers) {
 	});
 
 	const ingredients = data.ingredients || '';
+	const categories = String(data.categories || data.category || '')
+		.split(',')
+		.map((category) => category.trim())
+		.filter((category) => category.toLowerCase() !== 'popular')
+		.filter(Boolean);
 
 	return {
 		image: data.image || '',
 		name: data.name || '',
 		price: parseNumber(data.price),
-		category: data.category || '',
+		category: categories[0] || '',
+		categories,
+		categoryOrder: parseNumber(data.categoryorder),
 		sortOrder: parseNumber(data.sortorder),
+		popular: parseBoolean(data.popular),
 		available: data.available ? parseBoolean(data.available) : true,
 		spicy: parseBoolean(data.spicy),
 		vegetarian: parseBoolean(data.vegetarian),
