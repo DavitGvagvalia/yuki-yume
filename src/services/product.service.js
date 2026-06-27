@@ -26,19 +26,48 @@ function normalizeProductName(name) {
   return String(name || '').trim().toLowerCase();
 }
 
+function normalizeSortOrder(value) {
+  const sortOrder = Number(value);
+
+  return Number.isFinite(sortOrder) ? sortOrder : Number.MAX_SAFE_INTEGER;
+}
+
+export function sortProductsByCategoryOrder(products) {
+  return [...products].sort((firstProduct, secondProduct) => {
+    const firstCategory = String(firstProduct.category || '');
+    const secondCategory = String(secondProduct.category || '');
+    const categoryComparison = firstCategory.localeCompare(secondCategory);
+
+    if (categoryComparison !== 0) {
+      return categoryComparison;
+    }
+
+    const orderComparison = normalizeSortOrder(firstProduct.sortOrder) -
+      normalizeSortOrder(secondProduct.sortOrder);
+
+    if (orderComparison !== 0) {
+      return orderComparison;
+    }
+
+    return String(firstProduct.name || '').localeCompare(String(secondProduct.name || ''));
+  });
+}
+
 export async function getProductsRaw() {
   const querySnapshot = await getDocs(productsCollection);
 
-  return querySnapshot.docs.map(doc => ({
+  return sortProductsByCategoryOrder(querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
-  }));
+  })));
 }
 
 export async function getProducts() {
   const rawProducts = await getProductsRaw();
 
-  return Promise.all(rawProducts.map(attachImage));
+  const productsWithImages = await Promise.all(rawProducts.map(attachImage));
+
+  return sortProductsByCategoryOrder(productsWithImages);
 }
 
 export default async function addProduct(productData) {
@@ -68,6 +97,23 @@ export async function updateProduct(productId, updatedData) {
     }
 }
 
+export async function updateCategoryProductOrder(productsInOrder) {
+    try {
+        const batch = writeBatch(db);
+
+        productsInOrder.forEach((product, index) => {
+            const productRef = doc(db, 'products', product.id);
+            batch.update(productRef, { sortOrder: index + 1 });
+        });
+
+        await batch.commit();
+        clearProductsCache();
+    } catch (error) {
+        console.error('Error updating product order:', error);
+        throw error;
+    }
+}
+
 export async function deleteProduct(productId) {
     try {
         const productRef = doc(db, 'products', productId);
@@ -89,9 +135,26 @@ export async function batchAddProducts(products) {
     const skipped = [];
     const invalid = [];
     const productsToAdd = [];
+    const categorySortCounts = new Map();
+
+    existingProducts.forEach((product) => {
+      const category = String(product.category || '').trim();
+      const currentCount = categorySortCounts.get(category) || 0;
+      const existingSortOrder = Number(product.sortOrder);
+      const nextCount = Number.isFinite(existingSortOrder) && existingSortOrder > 0
+        ? Math.max(currentCount, existingSortOrder)
+        : currentCount + 1;
+
+      categorySortCounts.set(category, nextCount);
+    });
 
     products.forEach((product, index) => {
       const productName = normalizeProductName(product.name);
+      const category = String(product.category || '').trim();
+      const parsedSortOrder = Number(product.sortOrder);
+      const sortOrder = Number.isFinite(parsedSortOrder) && parsedSortOrder > 0
+        ? parsedSortOrder
+        : (categorySortCounts.get(category) || 0) + 1;
 
       if (!productName) {
         invalid.push({ row: index + 2, reason: 'Missing product name' });
@@ -104,11 +167,13 @@ export async function batchAddProducts(products) {
       }
 
       knownProductNames.add(productName);
+      categorySortCounts.set(category, Math.max(categorySortCounts.get(category) || 0, sortOrder));
       productsToAdd.push({
         ...productDefaults,
         ...product,
         name: product.name.trim(),
-        category: String(product.category || '').trim(),
+        category,
+        sortOrder,
         image: String(product.image || '').trim(),
         price: Number(product.price) || 0,
         preparationTime: Number(product.preparationTime) || 0,

@@ -4,7 +4,7 @@ import Detail from "../productDetails/Detail.jsx";
 function ProductCard({ product, openDetail, onChoose }) {
   return (
     <div
-      className="flex h-max  cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-accent transition hover:border-accent hover:bg-control-hover"
+      className="flex h-max  cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover"
       onClick={openDetail}
     >
       <div className="w-full flex justify-center items-center">
@@ -15,7 +15,7 @@ function ProductCard({ product, openDetail, onChoose }) {
         />
       </div>
 
-      <div className="flex h-full flex-col justify-between gap-4 p-4">
+      <div className="flex h-full flex-col justify-between gap-4 p-4 bg-accent">
         <div className="flex flex-col gap-3 overflow-y-auto">
           <p className="text-xs font-semibold uppercase text-muted">{product.category}</p>
           <h4 className="text-lg font-bold text-text">{product.name}</h4>

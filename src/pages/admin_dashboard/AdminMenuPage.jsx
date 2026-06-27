@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import addProduct, {
 	batchAddProducts,
 	deleteProduct,
+	updateCategoryProductOrder,
 	updateProduct
 } from '../../services/product.service.js';
 import { logoutAdmin } from '../../services/adminAuth.service.js';
@@ -20,6 +21,7 @@ const EMPTY_FORM = {
 	name: '',
 	price: '',
 	category: '',
+	sortOrder: '',
 	available: true,
 	spicy: false,
 	vegetarian: false,
@@ -33,6 +35,7 @@ function productToForm(product) {
 		name: product.name || '',
 		price: product.price ?? '',
 		category: product.category || '',
+		sortOrder: product.sortOrder ?? '',
 		available: product.available ?? true,
 		spicy: Boolean(product.spicy),
 		vegetarian: Boolean(product.vegetarian),
@@ -49,6 +52,7 @@ function formToProduct(form) {
 		name: form.name.trim(),
 		price: Number(form.price),
 		category: form.category.trim(),
+		sortOrder: Number(form.sortOrder || 0),
 		available: form.available,
 		spicy: form.spicy,
 		vegetarian: form.vegetarian,
@@ -63,14 +67,22 @@ function formToProduct(form) {
 function ProductList({
 	products,
 	totalProducts,
+	categories,
+	orderCategory,
 	searchTerm,
 	selectedProductId,
 	importing,
+	orderingProductId,
+	categoryOrderProductIds,
+	onOrderCategoryChange,
 	onSearchChange,
 	onSelect,
 	onCreate,
+	onMoveProduct,
 	onBatchUpload
 }) {
+	const canReorder = orderCategory !== 'ALL' && !searchTerm.trim();
+
 	return (
 		<section className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-4">
 			<div className="flex items-center justify-between gap-3">
@@ -115,43 +127,105 @@ function ProductList({
 				</span>
 			</label>
 
+			<label className="flex flex-col gap-2 text-sm">
+				<span className="text-text-secondary">Order products in category</span>
+				<select
+					value={orderCategory}
+					onChange={(event) => onOrderCategoryChange(event.target.value)}
+					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
+				>
+					<option value="ALL">All categories</option>
+					{categories.map((category) => (
+						<option key={category} value={category}>{category}</option>
+					))}
+				</select>
+				<span className="text-xs text-text-secondary">
+					Choose a category and use the arrows to set the customer menu order.
+				</span>
+			</label>
+
 			<div className="flex max-h-[680px] flex-col gap-2 overflow-auto">
 				{products.length === 0 ? (
 					<p className="text-sm text-text-secondary">No products found.</p>
 				) : (
-					products.map((product) => (
-						<button
-							key={product.id}
-							type="button"
-							className={`flex items-center gap-3 rounded border p-3 text-left transition ${
-								selectedProductId === product.id
-									? 'border-accent bg-control'
-									: 'border-border bg-background/35 hover:border-accent hover:bg-control'
-							}`}
-							onClick={() => onSelect(product)}
-						>
-							<img
-								src={product.imageUrl}
-								alt={product.name}
-								className="h-14 w-14 rounded object-cover"
-							/>
+					products.map((product) => {
+						const orderIndex = categoryOrderProductIds.indexOf(product.id);
+						const canMoveProduct = canReorder && orderIndex !== -1;
 
-							<span className="min-w-0 flex-1">
-								<span className="block truncate font-semibold">{product.name}</span>
-								<span className="block text-sm text-text-secondary">
-									{product.category || 'No category'} · {product.price}₾
+						return (
+							<div
+								key={product.id}
+								role="button"
+								tabIndex={0}
+								className={`flex items-center gap-3 rounded border p-3 text-left transition ${
+									selectedProductId === product.id
+										? 'border-accent bg-control'
+										: 'border-border bg-background/35 hover:border-accent hover:bg-control'
+								}`}
+								onClick={() => onSelect(product)}
+								onKeyDown={(event) => {
+									if (event.key === 'Enter' || event.key === ' ') {
+										event.preventDefault();
+										onSelect(product);
+									}
+								}}
+							>
+								<img
+									src={product.imageUrl}
+									alt={product.name}
+									className="h-14 w-14 rounded object-cover"
+								/>
+
+								<span className="min-w-0 flex-1">
+									<span className="block truncate font-semibold">{product.name}</span>
+									<span className="block text-sm text-text-secondary">
+										{product.category || 'No category'} · {product.price}₾
+										{Number.isFinite(Number(product.sortOrder)) && (
+											<> · #{Number(product.sortOrder)}</>
+										)}
+									</span>
 								</span>
-							</span>
 
-							<span className={`rounded px-2 py-1 text-xs ${
-								product.available === false
-									? 'bg-danger-soft text-danger'
-									: 'bg-success-soft text-success'
-							}`}>
-								{product.available === false ? 'Hidden' : 'Available'}
-							</span>
-						</button>
-					))
+								{canMoveProduct && (
+									<span className="flex flex-col gap-1" aria-label={`Move ${product.name}`}>
+										<button
+											type="button"
+											className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+											disabled={orderIndex === 0 || orderingProductId === product.id}
+											onClick={(event) => {
+												event.stopPropagation();
+												onMoveProduct(product.id, -1);
+											}}
+										>
+											Up
+										</button>
+										<button
+											type="button"
+											className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+											disabled={
+												orderIndex === categoryOrderProductIds.length - 1 ||
+												orderingProductId === product.id
+											}
+											onClick={(event) => {
+												event.stopPropagation();
+												onMoveProduct(product.id, 1);
+											}}
+										>
+											Down
+										</button>
+									</span>
+								)}
+
+								<span className={`rounded px-2 py-1 text-xs ${
+									product.available === false
+										? 'bg-danger-soft text-danger'
+										: 'bg-success-soft text-success'
+								}`}>
+									{product.available === false ? 'Hidden' : 'Available'}
+								</span>
+							</div>
+						);
+					})
 				)}
 			</div>
 		</section>
@@ -257,6 +331,18 @@ function ProductForm({
 						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
 					/>
 				</label>
+
+				<label className="flex flex-col gap-2 text-sm">
+					<span className="text-text-secondary">Order in category</span>
+					<input
+						type="number"
+						min="0"
+						step="1"
+						value={form.sortOrder}
+						onChange={(event) => onChange('sortOrder', event.target.value)}
+						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
+					/>
+				</label>
 			</div>
 
 			<label className="flex flex-col gap-2 text-sm">
@@ -359,19 +445,28 @@ export default function AdminMenuPage() {
 	const [message, setMessage] = useState('');
 	const [error, setError] = useState('');
 	const [searchTerm, setSearchTerm] = useState('');
+	const [orderCategory, setOrderCategory] = useState('ALL');
+	const [orderingProductId, setOrderingProductId] = useState(null);
 
 	const categories = useMemo(() => {
 		return [...new Set(products.map((product) => product.category).filter(Boolean))];
 	}, [products]);
 
+	const productsByCategory = useMemo(() => {
+		return products.filter((product) => product.category === orderCategory);
+	}, [products, orderCategory]);
+
 	const filteredProducts = useMemo(() => {
 		const query = searchTerm.trim().toLowerCase();
+		const categoryProducts = orderCategory === 'ALL'
+			? products
+			: products.filter((product) => product.category === orderCategory);
 
 		if (!query) {
-			return products;
+			return categoryProducts;
 		}
 
-		return products.filter((product) => {
+		return categoryProducts.filter((product) => {
 			const ingredients = Array.isArray(product.ingredients)
 				? product.ingredients.join(' ')
 				: '';
@@ -387,7 +482,7 @@ export default function AdminMenuPage() {
 
 			return searchableValue.includes(query);
 		});
-	}, [products, searchTerm]);
+	}, [products, orderCategory, searchTerm]);
 
 	function handleCreateMode() {
 		setSelectedProduct(null);
@@ -428,6 +523,13 @@ export default function AdminMenuPage() {
 
 			if (imageFile) {
 				productData.image = await uploadProductImage(productData.name, imageFile);
+			}
+
+			if (!selectedProduct && !form.sortOrder) {
+				const matchingCategoryProducts = products.filter((product) => (
+					product.category === productData.category
+				));
+				productData.sortOrder = matchingCategoryProducts.length + 1;
 			}
 
 			if (selectedProduct) {
@@ -538,6 +640,33 @@ export default function AdminMenuPage() {
 		}
 	}
 
+	async function handleMoveProduct(productId, direction) {
+		const currentIndex = productsByCategory.findIndex((product) => product.id === productId);
+		const nextIndex = currentIndex + direction;
+
+		if (currentIndex === -1 || nextIndex < 0 || nextIndex >= productsByCategory.length) {
+			return;
+		}
+
+		const reorderedProducts = [...productsByCategory];
+		const [movedProduct] = reorderedProducts.splice(currentIndex, 1);
+		reorderedProducts.splice(nextIndex, 0, movedProduct);
+
+		setOrderingProductId(productId);
+		setMessage('');
+		setError('');
+
+		try {
+			await updateCategoryProductOrder(reorderedProducts);
+			await refreshProducts({ useCache: false });
+			setMessage('Product order updated.');
+		} catch (orderError) {
+			setError(orderError.message || 'Unable to update product order.');
+		} finally {
+			setOrderingProductId(null);
+		}
+	}
+
 	return (
 		<main className="min-h-screen px-4 py-24">
 			<div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
@@ -592,12 +721,18 @@ export default function AdminMenuPage() {
 						<ProductList
 							products={filteredProducts}
 							totalProducts={products.length}
+							categories={categories}
+							orderCategory={orderCategory}
 							searchTerm={searchTerm}
 							selectedProductId={selectedProduct?.id}
 							importing={importing}
+							orderingProductId={orderingProductId}
+							categoryOrderProductIds={productsByCategory.map((product) => product.id)}
+							onOrderCategoryChange={setOrderCategory}
 							onSearchChange={setSearchTerm}
 							onSelect={handleSelectProduct}
 							onCreate={handleCreateMode}
+							onMoveProduct={handleMoveProduct}
 							onBatchUpload={handleBatchUpload}
 						/>
 

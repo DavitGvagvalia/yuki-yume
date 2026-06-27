@@ -39,6 +39,7 @@ export type Product = {
   name: string;
   price: number;
   category: string;
+  sortOrder: number;
   available: boolean;
   spicy: boolean;
   vegetarian: boolean;
@@ -51,6 +52,7 @@ export const productDefaults: Product = {
   name: "",
   price: 0,
   category: "",
+  sortOrder: 0,
   available: true,
   spicy: false,
   vegetarian: false,
@@ -126,4 +128,3 @@ export const orderRequiredFields: (keyof Order)[] = [
 export function createOrder(data: Partial<Order> = {}): Order {
   return createFromTemplate(orderDefaults, orderRequiredFields, data);
 }
-

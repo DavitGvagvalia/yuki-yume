@@ -162,6 +162,7 @@ function mapProduct(row, headers) {
 		name: data.name || '',
 		price: parseNumber(data.price),
 		category: data.category || '',
+		sortOrder: parseNumber(data.sortorder),
 		available: data.available ? parseBoolean(data.available) : true,
 		spicy: parseBoolean(data.spicy),
 		vegetarian: parseBoolean(data.vegetarian),
