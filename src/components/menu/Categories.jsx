@@ -21,7 +21,7 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
     }
 
   return (
-    <div className="flex gap-10 items-center overflow-x-auto border-y border-border bg-panel/70 p-2 md:p-10 backdrop-blur md:justify-center fixed w-full z-100">
+    <div className="flex gap-10 items-center overflow-x-auto border-y border-border bg-panel/70 p-2 pt-4 md:p-10 backdrop-blur md:justify-center fixed w-full z-100">
       <div className="flex gap-1 overflow-y-auto w-fit md:h-15">
       {categories.map((category) => (
         <button
