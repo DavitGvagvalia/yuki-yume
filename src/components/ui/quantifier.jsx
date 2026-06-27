@@ -7,12 +7,13 @@ export const Quantifier = ({
     onDecrease,
 }) => {
     return (
-        <div className='bg-accent-muted text-white rounded-2xl flex gap-3 items-center justify-center p-1'>
+        <div className='flex items-center justify-center gap-3 rounded-3xl border border-border bg-control p-1 text-text'>
 
-            <button className=' bg-black rounded-4xl  flex items-center justify-center  w-5 h-5 active:scale-110'
+            <button className='flex h-6 w-6 items-center justify-center rounded-full bg-accent-soft text-text transition hover:bg-accent hover:text-on-accent active:scale-110 disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted'
+                disabled={value === 0}
                 onClick={onDecrease}><MinusIcon className={`aspect-square w-4 ${value === 0 ? "disabled opacity-50" : ""}`} /></button>
-            <span>{value}</span>
-            <button className='  bg-black rounded-4xl flex items-center justify-center w-5 h-5 active:scale-110'
+            <span className="min-w-5 text-center text-sm font-semibold">{value}</span>
+            <button className='flex h-6 w-6 items-center justify-center rounded-full bg-accent text-on-accent transition hover:bg-accent-hover active:scale-110'
                 onClick={onIncrease}><PlusIcon className="aspect-square w-4" /></button>
 
         </div>

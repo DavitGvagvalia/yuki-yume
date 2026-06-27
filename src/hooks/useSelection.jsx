@@ -38,6 +38,10 @@ const [selectedProducts, setSelectedProducts] = useState(
     );
   };
 
+  const clearSelection = () => {
+    setSelectedProducts([]);
+  };
+
   const increaseQuantity = (productId) => {
     setSelectedProducts((prev) =>
       prev.map((p) =>
@@ -89,6 +93,7 @@ const [selectedProducts, setSelectedProducts] = useState(
     selectedProducts,
     addProduct,
     removeProduct,
+    clearSelection,
     increaseQuantity,
     decreaseQuantity,
     getQuantity,

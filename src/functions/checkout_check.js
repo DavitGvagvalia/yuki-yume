@@ -1,4 +1,4 @@
-import { functions, db } from "../src/firebaseConfig.js";
+import { functions, db } from "../firebaseConfig.js";
 
 export const checkoutCheck = functions.https.onRequest(async (req, res) => {
   try {

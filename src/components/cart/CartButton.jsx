@@ -28,14 +28,14 @@ export const CartButton = () => {
     !isCartOpen &&
     !isCheckoutOpen &&
      (
-      <div className="fixed bottom-3 flex justify-center w-full md:z-50 z-[7]">
-        <div className="bg-background flex justify-between items-center p-2 rounded-4xl md:w-[40%] w-[90%] mb-5 px-7 border border-border">
+      <div className="fixed bottom-3 z-[7] flex w-full justify-center md:z-50">
+        <div className="mb-5 flex w-[90%] items-center justify-between rounded-3xl border border-border bg-panel-elevated p-2 px-7 shadow-2xl backdrop-blur md:w-[40%]">
           <h1 key={totalPrice} className="text-lg font-bold text-text animate-pop">
             {totalPrice} GEL
           </h1>
           <button
             onClick={toggleCart}
-            className="flex justify-center items-center gap-2 bg-accent-muted text-white rounded-3xl py-2 px-5 active:scale-103"
+            className="flex items-center justify-center gap-2 rounded-3xl bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103"
           >
             <span>Your cart</span>
           </button>

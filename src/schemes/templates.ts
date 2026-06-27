@@ -37,9 +37,13 @@ function createFromTemplate<T extends TemplateObject>(
 export type Product = {
   image: string;
   name: string;
-  description: string;
   price: number;
   category: string;
+  categories: string[];
+  categoryOrder: number;
+  categoryOrders: Record<string, number>;
+  sortOrder: number;
+  popular: boolean;
   available: boolean;
   spicy: boolean;
   vegetarian: boolean;
@@ -50,9 +54,13 @@ export type Product = {
 export const productDefaults: Product = {
   image: "",
   name: "",
-  description: "",
   price: 0,
   category: "",
+  categories: [],
+  categoryOrder: 0,
+  categoryOrders: {},
+  sortOrder: 0,
+  popular: false,
   available: true,
   spicy: false,
   vegetarian: false,
@@ -63,7 +71,6 @@ export const productDefaults: Product = {
 export const productRequiredFields: (keyof Product)[] = [
   "image",
   "name",
-  "description",
   "price",
   "image"
 ];
@@ -101,7 +108,7 @@ export function createReview(data: Partial<Review> = {}): Review {
 
 export type Order = {
   id: string;
-  name: string;
+  table: string;
   products: string[];
   date: string;
   totalPrice: number;
@@ -110,7 +117,7 @@ export type Order = {
 
 export const orderDefaults: Order = {
   id: "",
-  name: "",
+  table: "",
   products: [],
   date: "",
   totalPrice: 0,
@@ -119,7 +126,7 @@ export const orderDefaults: Order = {
 
 export const orderRequiredFields: (keyof Order)[] = [
   "id",
-  "name",
+  "table",
   "products",
   "date",
   "totalPrice",
@@ -129,4 +136,3 @@ export const orderRequiredFields: (keyof Order)[] = [
 export function createOrder(data: Partial<Order> = {}): Order {
   return createFromTemplate(orderDefaults, orderRequiredFields, data);
 }
-

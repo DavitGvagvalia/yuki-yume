@@ -12,6 +12,7 @@ function PageWrapper({ children }) {
       className = {`
         min-h-screen
         bg-background
+        background-image
         text-text
         flex
         flex-col

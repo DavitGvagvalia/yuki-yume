@@ -4,7 +4,9 @@ import { useSelection } from "../../hooks/useSelection.jsx";
 import { useCart } from "../../hooks/useCart.jsx";
 import { useCheckout } from "../../hooks/useCheckout.jsx";
 import { Link } from "react-router";
-
+import { useOrder } from "../../hooks/useOrders.jsx";
+import { useLocation, useNavigate } from 'react-router'
+import {useState, useEffect} from "react";
 
 const CartItems = ({ items }) => {
   return (
@@ -15,7 +17,6 @@ const CartItems = ({ items }) => {
         </p>
       ) : (
         items.map((item) => (
-          console.log(item),
           <CartItem key={item.id} item={item} />
         ))
       )}
@@ -25,7 +26,7 @@ const CartItems = ({ items }) => {
 
 const CartHeader = ({ onCartToggle }) => {
   return (
-    <div className="flex items-center justify-between p-4 border-b border-border">
+    <div className="flex items-center justify-between border-b border-border bg-panel px-4 py-4">
       <button
         onClick={onCartToggle}
         aria-label="Close cart"
@@ -42,14 +43,59 @@ const CartHeader = ({ onCartToggle }) => {
   );
 };
 
-const CartFooter = ({ totalPrice,selectedProducts }) => {
-  const { openCheckout } = useCheckout()
+const CartFooter = ({ totalPrice,selectedProducts,toggleCart,clearSelection }) => {
+  const navigate = useNavigate()
+  const path = useLocation().pathname.split("/")
+  const table = path[path.length - 1]
+  const { createNewOrder } = useOrder();
+
+  const [user,setUser] = useState(
+    {
+            id: crypto.randomUUID(),
+            table: table,
+            products: [],
+            date: new Date().toISOString(),
+            totalPrice: 0,
+            status: "pending",
+        }
+  )
+  
+
+  useEffect(() => {
+    setUser((currentUser) => ({
+      ...currentUser,
+      products: selectedProducts,
+      totalPrice: Number(totalPrice),
+    }))
+  }, [selectedProducts, totalPrice])
+
+
+  const handleOrder = async (e) => {
+    e.preventDefault();
+    const orderId = await createNewOrder(user);
+    navigate(`/order/success`, {
+      state: {
+        order: {
+          ...user,
+          orderId,
+        },
+      },
+    })
+    toggleCart()
+    clearSelection()
+    
+
+  }
+
+
+
+
   return (
-    <div className=" py-5 border-t border-border flex justify-center">
-      <div className=' w-[90%] bg-background flex  justify-between items-center p-2 rounded-4xl bottom-5 z-9 px-7 border border-border'>
-      <h1 className=''>{totalPrice} GEL</h1>
-      <button disabled={selectedProducts.length === 0 } onClick={openCheckout} className='flex justify-center items-center gap-2 bg-accent  text-white rounded-3xl py-2 px-5 active:scale-103 disabled:bg-border disabled:text-muted'>
-         <span>checkout</span>
+    <div className="flex justify-center border-t border-border bg-panel px-4 py-5">
+      <div className='bottom-5 z-9 flex w-[90%] items-center justify-between rounded-3xl border border-border bg-panel-elevated p-2 px-7'>
+      <h1 className='font-bold text-text'>{totalPrice} GEL</h1>
+      <button disabled={selectedProducts.length === 0 } onClick={handleOrder} className='flex items-center justify-center gap-2 rounded-3xl bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103 disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted'>
+         <span>place order</span>
       </button>
       </div>
     </div>
@@ -58,7 +104,7 @@ const CartFooter = ({ totalPrice,selectedProducts }) => {
 
 export default function CartDrawer() {
   const { isCartOpen, toggleCart  } = useCart()
-  const { selectedProducts,totalPrice} = useSelection();
+  const { selectedProducts,totalPrice, clearSelection} = useSelection();
   if (!isCartOpen) return null;
 
   return (
@@ -69,18 +115,20 @@ export default function CartDrawer() {
         right-0
         top-0
         h-full
-        md:w-100
+        md:w-2/7
         w-screen
-        bg-surface
+        bg-panel
         flex
         flex-col
-        shadow-xl
+        border-l
+        border-border
+        shadow-2xl
         z-11
       "
     >
       <CartHeader onCartToggle={toggleCart} />
       <CartItems items={selectedProducts} />
-      <CartFooter totalPrice={totalPrice} selectedProducts={selectedProducts}/>
+      <CartFooter totalPrice={totalPrice} selectedProducts={selectedProducts} toggleCart={toggleCart} clearSelection={clearSelection}/>
     </aside>
 
   );

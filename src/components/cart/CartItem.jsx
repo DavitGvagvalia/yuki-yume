@@ -5,16 +5,16 @@ export default function CartItem({ item }) {
   const {getQuantity,increaseQuantity,decreaseQuantity,removeProduct} = useSelection()
   
   return (
-    <div className="flex items-center gap-4 py-3 border-b border-border h-40">
+    <div className="flex h-36 items-center gap-4 border-b border-border py-3">
       <img
         src={item.imageUrl}
         alt={item.name}
-        className="w-16 h-16 rounded-md object-cover"
+        className="aspect-square w-16 rounded-md object-cover"
       />
 
       <div className="flex-1">
         <h4 className="text-text font-medium">{item.name}</h4>
-        <p className="text-sm text-muted">${item.price}</p>
+        <p className="text-sm text-muted">{item.price} GEL</p>
       </div>
 
       <Quantifier
@@ -29,7 +29,7 @@ export default function CartItem({ item }) {
         className="
           ml-2
           text-muted
-          hover:text-accent
+          hover:text-danger
           transition
         "
         aria-label="Remove item"

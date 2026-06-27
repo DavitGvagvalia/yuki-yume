@@ -33,7 +33,7 @@ export const OrderProvider = ({ children }) => {
 
 	const createNewOrder = async (orderData) => {
 		try {
-			await addOrder(orderData);
+			return await addOrder(orderData);
 		} catch (err) {
 			console.error('Error adding order:', err);
 			setError(err);

@@ -5,13 +5,21 @@ import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCKUipga6B-J4fUhFyRu7SALowSrqIb9UQ",
-  authDomain: "yuki-yume-sushi.firebaseapp.com",
-  projectId: "yuki-yume-sushi",
-  storageBucket: "yuki-yume-sushi.firebasestorage.app",
-  messagingSenderId: "905355544721",
-  appId: "1:905355544721:web:7242beb8379aa24dc49730"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
+
+const missingConfigKeys = Object.entries(firebaseConfig)
+  .filter(([, value]) => !value)
+  .map(([key]) => key);
+
+if (missingConfigKeys.length > 0) {
+  throw new Error(`Missing Firebase config values: ${missingConfigKeys.join(', ')}`);
+}
 
 const app = initializeApp(firebaseConfig);
 
