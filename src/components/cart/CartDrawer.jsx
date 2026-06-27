@@ -92,11 +92,9 @@ const CartFooter = ({ totalPrice,selectedProducts,toggleCart,clearSelection }) =
 
   return (
     <div className="flex justify-center border-t border-border bg-panel px-4 py-5">
-      <div className='bottom-5 z-9 flex w-[90%] items-center justify-between rounded-3xl border border-border bg-panel-elevated p-2 px-7'>
+      <div className='bottom-5 z-9 flex w-[90%] items-center justify-center rounded-3xl border border-border bg-panel-elevated p-2 px-7'>
       <h1 className='font-bold text-text'>{totalPrice} GEL</h1>
-      <button disabled={selectedProducts.length === 0 } onClick={handleOrder} className='flex items-center justify-center gap-2 rounded-3xl bg-accent px-5 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103 disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted'>
-         <span>place order</span>
-      </button>
+      
       </div>
     </div>
   );
