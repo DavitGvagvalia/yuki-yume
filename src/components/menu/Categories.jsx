@@ -14,7 +14,7 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
 
     const ContactInformation = () => {
       return(
-        <address className="not-italic">
+        <address className="not-italic flex items-center">
           <a className="text-sm transition w-10 hover:text-text" href='tel:+995555328809'><PhoneIcon className="inline mr-2 h-4 w-4" /></a>
         </address>
       )
