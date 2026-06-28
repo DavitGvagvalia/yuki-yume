@@ -1,7 +1,13 @@
-import { PhoneIcon } from "@heroicons/react/24/outline";
+import { useRef } from "react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PhoneIcon
+} from "@heroicons/react/24/outline";
 
 
 const Categories = ({ categories, activeCategory, setActiveCategory }) => {
+  const categoriesRef = useRef(null);
 
   const categoryClassNames = (category) =>
     `flex-shrink-0 rounded-md border px-4 py-2 text-sm font-semibold whitespace-nowrap transition
@@ -20,9 +26,28 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
       )
     }
 
+  const chevronClassNames = "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-border bg-control text-text-secondary transition hover:border-accent hover:text-text md:h-9 md:w-9";
+
+  function scrollCategories(direction) {
+    categoriesRef.current?.scrollBy({
+      left: direction * 180,
+      behavior: "smooth"
+    });
+  }
+
   return (
-    <div className="flex gap-10 items-center overflow-x-auto border-y border-border bg-panel/70 p-2 pt-4 md:p-10 backdrop-blur md:justify-center fixed w-full z-100">
-      <div className="flex gap-1 overflow-y-auto w-fit md:h-15">
+    <div className="flex gap-2 items-center overflow-x-auto border-y border-border bg-panel/70 p-2 pt-4 md:gap-5 md:p-10 backdrop-blur md:justify-center fixed w-full z-100">
+      <div className="flex min-w-0 items-center gap-1 md:h-auto">
+        <button
+          type="button"
+          aria-label="Scroll categories left"
+          onClick={() => scrollCategories(-1)}
+          className={chevronClassNames}
+        >
+          <ChevronLeftIcon className="h-4 w-4" />
+        </button>
+
+        <div ref={categoriesRef} className="flex gap-1 overflow-x-auto w-fit md:h-15">
       {categories.map((category) => (
         <button
           key={category}
@@ -34,6 +59,15 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
           {category}
         </button>
       ))}
+      </div>
+      <button
+        type="button"
+        aria-label="Scroll categories right"
+        onClick={() => scrollCategories(1)}
+        className={chevronClassNames}
+      >
+        <ChevronRightIcon className="h-4 w-4" />
+      </button>
       </div>
       <ContactInformation className="text-sm" />
 
