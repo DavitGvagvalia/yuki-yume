@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { getProducts } from "../services/product.service";
 import { createCustomContext } from "../utils/createContext";
 import { fetcherHandler } from "../utils/storageHandler";
@@ -8,10 +8,30 @@ const ProductsProvider = ({ children }) => {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const hasProductsRef = useRef(false);
 
-  const refreshProducts = useCallback(async ({ useCache = true } = {}) => {
-    setLoading(true);
+  const replaceProducts = useCallback((productsOrUpdater) => {
+    setProducts((currentProducts) => {
+      const nextProducts = typeof productsOrUpdater === 'function'
+        ? productsOrUpdater(currentProducts)
+        : productsOrUpdater;
+
+      hasProductsRef.current = nextProducts.length > 0;
+      return nextProducts;
+    });
+  }, []);
+
+  const refreshProducts = useCallback(async ({ useCache = true, showLoading } = {}) => {
+    const shouldShowLoading = showLoading ?? !hasProductsRef.current;
+
+    if (shouldShowLoading) {
+      setLoading(true);
+    } else {
+      setRefreshing(true);
+    }
+
     setError(null);
 
     try {
@@ -19,21 +39,32 @@ const ProductsProvider = ({ children }) => {
         ? await fetcherHandler("products", getProducts)
         : await getProducts();
 
-      setProducts(productData);
+      replaceProducts(productData);
       return productData;
     } catch (productError) {
       setError(productError);
       throw productError;
     } finally {
-      setLoading(false);
+      if (shouldShowLoading) {
+        setLoading(false);
+      } else {
+        setRefreshing(false);
+      }
     }
-  }, []);
+  }, [replaceProducts]);
 
   useEffect(() => {
-    refreshProducts().catch(() => {});
+    refreshProducts({ showLoading: true }).catch(() => {});
   }, [refreshProducts]);
 
-  const value = { products, loading, error, refreshProducts };
+  const value = {
+    products,
+    loading,
+    refreshing,
+    error,
+    refreshProducts,
+    setProducts: replaceProducts
+  };
 
   return (
     <ProductsContext.Provider value={value}>

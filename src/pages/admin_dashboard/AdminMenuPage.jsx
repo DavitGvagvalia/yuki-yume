@@ -7,6 +7,7 @@ import addProduct, {
 	getProductCategories,
 	getOrderedCategories,
 	getProductsMatchingCategory,
+	sortProductsByCategoryOrder,
 	updateCategoryOrder,
 	updateCategoryProductOrder,
 	updateProduct
@@ -95,10 +96,53 @@ function ProductList({
 	onSearchChange,
 	onSelect,
 	onCreate,
-	onMoveProduct,
+	onReorderProduct,
 	onBatchUpload
 }) {
 	const canReorder = orderCategory !== 'ALL' && !searchTerm.trim();
+	const [draggedProductId, setDraggedProductId] = useState(null);
+	const [dropTargetProductId, setDropTargetProductId] = useState(null);
+	const isOrdering = Boolean(orderingProductId);
+
+	function handleProductDragStart(event, productId) {
+		if (!canReorder || isOrdering) {
+			event.preventDefault();
+			return;
+		}
+
+		event.dataTransfer.effectAllowed = 'move';
+		event.dataTransfer.setData('text/plain', productId);
+		setDraggedProductId(productId);
+	}
+
+	function handleProductDragOver(event, productId) {
+		if (!canReorder || isOrdering || draggedProductId === productId) {
+			return;
+		}
+
+		event.preventDefault();
+		event.dataTransfer.dropEffect = 'move';
+		setDropTargetProductId(productId);
+	}
+
+	function handleProductDrop(event, targetProductId) {
+		event.preventDefault();
+
+		const sourceProductId = draggedProductId || event.dataTransfer.getData('text/plain');
+		setDraggedProductId(null);
+		setDropTargetProductId(null);
+
+		if (!canReorder || isOrdering || !sourceProductId || sourceProductId === targetProductId) {
+			return;
+		}
+
+		onReorderProduct(sourceProductId, targetProductId);
+	}
+
+	function handleProductDragEnd() {
+		setDraggedProductId(null);
+		setDropTargetProductId(null);
+	}
 
 	return (
 		<section className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-4">
@@ -158,7 +202,7 @@ function ProductList({
 					))}
 				</select>
 				<span className="text-xs text-text-secondary">
-					Choose a category and use the arrows to set the customer menu order.
+					Choose a category, then drag products into the customer menu order.
 				</span>
 			</label>
 
@@ -168,17 +212,23 @@ function ProductList({
 				) : (
 					products.map((product) => {
 						const orderIndex = categoryOrderProductIds.indexOf(product.id);
-						const canMoveProduct = canReorder && orderIndex !== -1;
+						const canDragProduct = canReorder && orderIndex !== -1 && !isOrdering;
 
 						return (
 							<div
 								key={product.id}
 								role="button"
 								tabIndex={0}
+								draggable={canDragProduct}
+								aria-grabbed={draggedProductId === product.id}
 								className={`flex items-center gap-3 rounded border p-3 text-left transition ${
-									selectedProductId === product.id
+									dropTargetProductId === product.id
+										? 'border-accent bg-accent-soft'
+										: selectedProductId === product.id
 										? 'border-accent bg-control'
 										: 'border-border bg-background/35 hover:border-accent hover:bg-control'
+								} ${canDragProduct ? 'cursor-grab active:cursor-grabbing' : ''} ${
+									draggedProductId === product.id ? 'opacity-60' : ''
 								}`}
 								onClick={() => onSelect(product)}
 								onKeyDown={(event) => {
@@ -187,7 +237,22 @@ function ProductList({
 										onSelect(product);
 									}
 								}}
+								onDragStart={(event) => handleProductDragStart(event, product.id)}
+								onDragOver={(event) => handleProductDragOver(event, product.id)}
+								onDragLeave={() => {
+									if (dropTargetProductId === product.id) {
+										setDropTargetProductId(null);
+									}
+								}}
+								onDrop={(event) => handleProductDrop(event, product.id)}
+								onDragEnd={handleProductDragEnd}
 							>
+								{canReorder && (
+									<span className="rounded bg-control px-2 py-1 text-xs text-text-secondary">
+										#{orderIndex + 1}
+									</span>
+								)}
+
 								<img
 									src={product.imageUrl}
 									alt={product.name}
@@ -205,33 +270,9 @@ function ProductList({
 									</span>
 								</span>
 
-								{canMoveProduct && (
-									<span className="flex flex-col gap-1" aria-label={`Move ${product.name}`}>
-										<button
-											type="button"
-											className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-											disabled={orderIndex === 0 || orderingProductId === product.id}
-											onClick={(event) => {
-												event.stopPropagation();
-												onMoveProduct(product.id, -1);
-											}}
-										>
-											Up
-										</button>
-										<button
-											type="button"
-											className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-											disabled={
-												orderIndex === categoryOrderProductIds.length - 1 ||
-												orderingProductId === product.id
-											}
-											onClick={(event) => {
-												event.stopPropagation();
-												onMoveProduct(product.id, 1);
-											}}
-										>
-											Down
-										</button>
+								{canReorder && (
+									<span className="rounded border border-border bg-control px-2 py-1 text-xs text-text-secondary">
+										{orderingProductId === product.id ? 'Saving' : 'Drag'}
 									</span>
 								)}
 
@@ -518,8 +559,10 @@ export default function AdminMenuPage() {
 	const {
 		products,
 		loading,
+		refreshing,
 		error: loadError,
-		refreshProducts
+		refreshProducts,
+		setProducts
 	} = useProducts();
 	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [form, setForm] = useState(EMPTY_FORM);
@@ -618,6 +661,20 @@ export default function AdminMenuPage() {
 		}, {});
 	}
 
+	function updateProductsLocally(productsOrUpdater) {
+		setProducts((currentProducts) => {
+			const nextProducts = typeof productsOrUpdater === 'function'
+				? productsOrUpdater(currentProducts)
+				: productsOrUpdater;
+
+			return sortProductsByCategoryOrder(nextProducts);
+		});
+	}
+
+	function refreshProductsQuietly() {
+		return refreshProducts({ useCache: false, showLoading: false });
+	}
+
 	async function handleLogout() {
 		await logoutAdmin();
 		navigate('/admin/login', { replace: true });
@@ -650,15 +707,36 @@ export default function AdminMenuPage() {
 
 			if (selectedProduct) {
 				await updateProduct(selectedProduct.id, productData);
+				const updatedProduct = {
+					...selectedProduct,
+					...productData,
+					id: selectedProduct.id,
+					imageUrl: selectedProduct.imageUrl
+				};
+
+				updateProductsLocally((currentProducts) => (
+					currentProducts.map((product) => (
+						product.id === selectedProduct.id ? updatedProduct : product
+					))
+				));
+				setSelectedProduct(updatedProduct);
 				setMessage('Product updated.');
 			} else {
-				await addProduct(productData);
+				const productId = await addProduct(productData);
+				updateProductsLocally((currentProducts) => ([
+					...currentProducts,
+					{
+						...productData,
+						id: productId,
+						imageUrl: null
+					}
+				]));
 				setMessage('Product created.');
 				setForm(EMPTY_FORM);
 			}
 
 			setImageFile(null);
-			await refreshProducts({ useCache: false });
+			await refreshProductsQuietly();
 		} catch (submitError) {
 			setError(submitError.message || 'Unable to save product.');
 		} finally {
@@ -717,7 +795,7 @@ export default function AdminMenuPage() {
 			const invalidCount = result.invalid.length;
 			const unmatchedImages = Math.max(imageFiles.length - uploadedImages, 0);
 
-			await refreshProducts({ useCache: false });
+			await refreshProductsQuietly();
 			setMessage(
 				`Batch upload complete. Added ${result.added} product${result.added === 1 ? '' : 's'}, uploaded ${uploadedImages} image${uploadedImages === 1 ? '' : 's'}, skipped ${skippedCount} duplicate${skippedCount === 1 ? '' : 's'}, invalid ${invalidCount} row${invalidCount === 1 ? '' : 's'}, unmatched images ${unmatchedImages}.`
 			);
@@ -746,9 +824,12 @@ export default function AdminMenuPage() {
 
 		try {
 			await deleteProduct(selectedProduct.id);
-			await refreshProducts({ useCache: false });
+			updateProductsLocally((currentProducts) => (
+				currentProducts.filter((product) => product.id !== selectedProduct.id)
+			));
 			handleCreateMode();
 			setMessage('Product deleted.');
+			await refreshProductsQuietly();
 		} catch (deleteError) {
 			setError(deleteError.message || 'Unable to delete product.');
 		} finally {
@@ -756,27 +837,42 @@ export default function AdminMenuPage() {
 		}
 	}
 
-	async function handleMoveProduct(productId, direction) {
-		const currentIndex = productsByCategory.findIndex((product) => product.id === productId);
-		const nextIndex = currentIndex + direction;
+	async function handleReorderProduct(sourceProductId, targetProductId) {
+		const currentIndex = productsByCategory.findIndex((product) => product.id === sourceProductId);
+		const nextIndex = productsByCategory.findIndex((product) => product.id === targetProductId);
 
 		if (currentIndex === -1 || nextIndex < 0 || nextIndex >= productsByCategory.length) {
+			return;
+		}
+
+		if (currentIndex === nextIndex) {
 			return;
 		}
 
 		const reorderedProducts = [...productsByCategory];
 		const [movedProduct] = reorderedProducts.splice(currentIndex, 1);
 		reorderedProducts.splice(nextIndex, 0, movedProduct);
+		const sortOrdersById = new Map(
+			reorderedProducts.map((product, index) => [product.id, index + 1])
+		);
 
-		setOrderingProductId(productId);
+		setOrderingProductId(sourceProductId);
 		setMessage('');
 		setError('');
+		updateProductsLocally((currentProducts) => (
+			currentProducts.map((product) => (
+				sortOrdersById.has(product.id)
+					? { ...product, sortOrder: sortOrdersById.get(product.id) }
+					: product
+			))
+		));
 
 		try {
 			await updateCategoryProductOrder(reorderedProducts);
-			await refreshProducts({ useCache: false });
 			setMessage('Product order updated.');
+			await refreshProductsQuietly();
 		} catch (orderError) {
+			await refreshProductsQuietly().catch(() => {});
 			setError(orderError.message || 'Unable to update product order.');
 		} finally {
 			setOrderingProductId(null);
@@ -796,16 +892,43 @@ export default function AdminMenuPage() {
 		const reorderedCategories = [...orderedCategories];
 		const [movedCategory] = reorderedCategories.splice(currentIndex, 1);
 		reorderedCategories.splice(nextIndex, 0, movedCategory);
+		const categoryOrdersByName = new Map(
+			reorderedCategories.map((category, index) => [category.name, index + 1])
+		);
 
 		setOrderingCategory(categoryName);
 		setMessage('');
 		setError('');
+		updateProductsLocally((currentProducts) => (
+			currentProducts.map((product) => {
+				const productCategories = getProductCategories(product);
+
+				if (productCategories.length === 0) {
+					return product;
+				}
+
+				const categoryOrders = productCategories.reduce((orders, productCategory) => {
+					orders[productCategory] = categoryOrdersByName.get(productCategory) || 0;
+					return orders;
+				}, {});
+				const primaryCategory = productCategories[0] || '';
+
+				return {
+					...product,
+					category: primaryCategory,
+					categories: productCategories,
+					categoryOrders,
+					categoryOrder: primaryCategory ? categoryOrders[primaryCategory] || 0 : 0
+				};
+			})
+		));
 
 		try {
 			await updateCategoryOrder(reorderedCategories, products);
-			await refreshProducts({ useCache: false });
 			setMessage('Category order updated.');
+			await refreshProductsQuietly();
 		} catch (orderError) {
+			await refreshProductsQuietly().catch(() => {});
 			setError(orderError.message || 'Unable to update category order.');
 		} finally {
 			setOrderingCategory(null);
@@ -859,6 +982,12 @@ export default function AdminMenuPage() {
 					</p>
 				)}
 
+				{refreshing && (
+					<p className="rounded border border-border bg-control p-3 text-sm text-text-secondary" role="status">
+						Syncing latest products...
+					</p>
+				)}
+
 				{loading ? (
 					<p className="text-lg text-text-secondary">Loading products...</p>
 				) : (
@@ -884,7 +1013,7 @@ export default function AdminMenuPage() {
 								onSearchChange={setSearchTerm}
 								onSelect={handleSelectProduct}
 								onCreate={handleCreateMode}
-								onMoveProduct={handleMoveProduct}
+								onReorderProduct={handleReorderProduct}
 								onBatchUpload={handleBatchUpload}
 							/>
 

@@ -29,6 +29,7 @@
   --color-card: var(--color-snow);
   --color-card-hover: var(--color-ice);
 
+
   /* Interactive states */
   --color-accent: var(--color-blue);
   --color-accent-hover: #1559ae;

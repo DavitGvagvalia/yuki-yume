@@ -13,6 +13,10 @@ body {
   height: 3px;
 }
 
+scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+}
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-accent);
 }
