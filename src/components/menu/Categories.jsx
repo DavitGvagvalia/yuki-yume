@@ -37,7 +37,7 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
 
   return (
     <div className="flex gap-2 items-center overflow-x-auto border-y border-border bg-panel/70 p-2 pt-4 md:gap-5 md:p-10 backdrop-blur md:justify-center fixed w-full z-100">
-      <div className="flex min-w-0 items-center gap-1 md:h-auto">
+      <div className="flex min-w-0 items-center gap-1 md:h-auto scrollbar-none">
         <button
           type="button"
           aria-label="Scroll categories left"
