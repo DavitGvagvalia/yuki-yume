@@ -1,5 +1,5 @@
-import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import { getProducts } from "../services/product.service";
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getProducts, isProductVisible } from "../services/product.service";
 import { createCustomContext } from "../utils/createContext";
 import { fetcherHandler } from "../utils/storageHandler";
 const ProductsContext = createContext(null);
@@ -11,6 +11,9 @@ const ProductsProvider = ({ children }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const hasProductsRef = useRef(false);
+  const visibleProducts = useMemo(() => {
+    return products.filter(isProductVisible);
+  }, [products]);
 
   const replaceProducts = useCallback((productsOrUpdater) => {
     setProducts((currentProducts) => {
@@ -59,6 +62,7 @@ const ProductsProvider = ({ children }) => {
 
   const value = {
     products,
+    visibleProducts,
     loading,
     refreshing,
     error,

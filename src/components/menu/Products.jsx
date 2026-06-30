@@ -1,7 +1,10 @@
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import Detail from "../productDetails/Detail.jsx";
-import { getProductCategoryLabel } from "../../services/product.service.js";
+import {
+  getProductCategoryLabel,
+  isProductVisible
+} from "../../services/product.service.js";
 function ProductCard({ product, openDetail, onChoose }) {
   return (
     <div
@@ -52,8 +55,13 @@ function ProductCard({ product, openDetail, onChoose }) {
 const Products = ({ products, onChoose }) => {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const visibleProducts = products.filter(isProductVisible);
 
   function openDetail(product) {
+    if (!isProductVisible(product)) {
+      return;
+    }
+
     setSelectedProduct(product);
   }
 
@@ -67,7 +75,7 @@ const Products = ({ products, onChoose }) => {
   md:grid-cols-3
   overflow-y-auto
 ">
-      {products.map((product) => (
+      {visibleProducts.map((product) => (
         <ProductCard
           key={product.id}
           product={product}

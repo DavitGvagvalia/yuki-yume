@@ -73,6 +73,10 @@ export function getProductCategoryLabel(product) {
   return getProductCategories(product).join(', ');
 }
 
+export function isProductVisible(product) {
+  return product.available !== false;
+}
+
 function getProductCategoryOrder(product, categoryName) {
   const categoryOrders = product.categoryOrders && typeof product.categoryOrders === 'object'
     ? product.categoryOrders

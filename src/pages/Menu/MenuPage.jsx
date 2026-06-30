@@ -21,19 +21,18 @@ const SectionText = () => {
 };
 
 export default function MenuPage() {
-  const { products } = useProducts()
+  const { visibleProducts } = useProducts()
   const { addProduct } = useSelection()
 
   const [activeCategory, setActiveCategory] = useState("POPULAR");
 
-
   const categories = useMemo(() => {
-    return ["POPULAR", ...getOrderedCategories(products).map((category) => category.name)];
-  }, [products]);
+    return ["POPULAR", ...getOrderedCategories(visibleProducts).map((category) => category.name)];
+  }, [visibleProducts]);
 
   const filteredProducts = useMemo(() => {
-    return getProductsMatchingCategory(products, activeCategory);
-  }, [products, activeCategory]);
+    return getProductsMatchingCategory(visibleProducts, activeCategory);
+  }, [visibleProducts, activeCategory]);
 
 
 
