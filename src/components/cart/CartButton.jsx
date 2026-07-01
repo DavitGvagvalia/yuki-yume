@@ -3,11 +3,14 @@ import { useCart } from "../../hooks/useCart";
 import { useSelection } from "../../hooks/useSelection";
 import { useCheckout } from "../../hooks/useCheckout";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export const CartButton = () => {
   const { isCartOpen, toggleCart } = useCart();
   const { totalCount, totalPrice } = useSelection();
   const { isCheckoutOpen } = useCheckout();
+  const { pathname } = useLocation();
+  const isAdminPage = pathname === "/admin" || pathname.startsWith("/admin/");
 
   const [animateTotal, setAnimateTotal] = useState(false);
 
@@ -22,6 +25,10 @@ export const CartButton = () => {
 
     return () => clearTimeout(timer);
   }, [totalCount]);
+
+  if (isAdminPage) {
+    return null;
+  }
 
   return (
     totalCount !== 0 &&
