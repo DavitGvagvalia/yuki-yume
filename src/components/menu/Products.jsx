@@ -16,7 +16,7 @@ function ProductCard({ product, openDetail, onChoose }) {
   onKeyDown={(e) => {
     if (e.key === "Enter" || e.key === " ") openDetail();
   }}
-  className="flex h-100 cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover"
+  className="flex h-50 md:h-100 cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover"
 >
   <div className="aspect-2/1 w-full overflow-hidden">
     <img
