@@ -48,6 +48,9 @@ export type Product = {
   spicy: boolean;
   vegetarian: boolean;
   preparationTime: number;
+  weight: number;
+  pieces: number;
+  calories: number;
   ingredients: string[];
 };
 
@@ -65,14 +68,15 @@ export const productDefaults: Product = {
   spicy: false,
   vegetarian: false,
   preparationTime: 0,
+  weight: 0,
+  pieces: 0,
+  calories: 0,
   ingredients: [],
 };
 
 export const productRequiredFields: (keyof Product)[] = [
-  "image",
   "name",
-  "price",
-  "image"
+  "category"
 ];
 
 export function createProduct(data: Partial<Product> = {}): Product {

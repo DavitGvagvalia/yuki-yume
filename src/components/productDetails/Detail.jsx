@@ -1,10 +1,8 @@
-import React from 'react'
-import { useProducts } from '../../hooks/useProducts'
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { useDetail } from '../../hooks/useDetail';
 import { useSelection } from '../../hooks/useSelection';
 import {Quantifier} from "../ui/quantifier";
 import { getProductCategoryLabel } from '../../services/product.service';
+import { getProductDetailMetadata } from '../../config/productFields';
 
 
 
@@ -20,7 +18,7 @@ const DetailHeader = ({ product, closeDetail }) => {
           closeDetail();
         }}
       >
-        <XMarkIcon className="w-6 h-6" />
+        <XMarkIcon className="w-6 h-6 mr-5" />
       </button>
 
       <h2 className="text-lg font-bold text-text flex gap-2 items-center">
@@ -33,9 +31,12 @@ const DetailHeader = ({ product, closeDetail }) => {
 
 
 const DetailBody = ({ product }) => {
+  const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
+  const detailMetadata = getProductDetailMetadata(product);
+
   return (
     <div className='flex flex-col gap-4 p-4'>
-      <img src={product.imageUrl} alt={product.name} className='max-h-[300px] w-full rounded-md border border-border object-cover' />
+      <img src={product.imageUrl} alt={product.name} className='max-h-75 w-full rounded-md border border-border object-cover' />
       <div className='flex flex-col gap-0.5'>
         <h3 className='text-xl font-bold'>
           {product.name}
@@ -44,23 +45,28 @@ const DetailBody = ({ product }) => {
         </h3>
         <p className='text-sm text-muted'>{getProductCategoryLabel(product)}</p>
       </div>
-      <div className="flex flex-wrap gap-1 text-sm">
-        {product.ingredients.map((ingredient) => (
-          <span
-            key={ingredient}
-            className="rounded-md border border-border bg-accent-soft px-2 py-1 text-sm text-text-secondary"
-          >
-            {ingredient}
-          </span>
-        ))}
-      </div>
+      {ingredients.length > 0 && (
+        <div className="flex flex-wrap gap-1 text-sm text-text-secondary">
+          {ingredients.join(", ")}
+        </div>
+      )}
+      {detailMetadata.length > 0 && (
+        <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
+          {detailMetadata.map((item) => (
+            <div key={item.key} className="rounded border border-border bg-control p-2">
+              <span className="block text-xs text-muted">{item.label}</span>
+              <span className="font-semibold text-text">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <p className='text-lg font-semibold'>{product.price}₾</p>
     </div>
   )
 }
 
 const DetailFooter = ({ product }) => {
-    const {getQuantity,increaseQuantity,decreaseQuantity,removeProduct,addProduct} = useSelection()
+    const {getQuantity,increaseQuantity,decreaseQuantity,addProduct} = useSelection()
     let quantity = getQuantity(product.id)
 
   return (
@@ -97,7 +103,7 @@ const Detail = ({ item, closeDetail }) => {
         shadow-2xl
         md:h-screen
         md:w-2/7
-        z-[9]"
+        z-[110]"
     >
       <DetailHeader product={item} closeDetail={closeDetail} />
       <DetailBody product={item} />

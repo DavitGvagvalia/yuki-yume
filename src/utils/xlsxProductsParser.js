@@ -1,3 +1,5 @@
+import { parseProductFieldsFromData } from '../config/productFields.js';
+
 const textDecoder = new TextDecoder('utf-8');
 
 function readString(bytes) {
@@ -161,21 +163,26 @@ function mapProduct(row, headers) {
 		.map((category) => category.trim())
 		.filter((category) => category.toLowerCase() !== 'popular')
 		.filter(Boolean);
+	const configuredFields = parseProductFieldsFromData(data);
 
 	return {
+		...configuredFields,
 		image: data.image || '',
-		name: data.name || '',
-		price: parseNumber(data.price),
+		name: configuredFields.name || data.name || '',
+		price: configuredFields.price ?? parseNumber(data.price),
 		category: categories[0] || '',
 		categories,
 		categoryOrder: parseNumber(data.categoryorder),
 		sortOrder: parseNumber(data.sortorder),
-		popular: parseBoolean(data.popular),
+		popular: configuredFields.popular ?? parseBoolean(data.popular),
 		available: data.available ? parseBoolean(data.available) : true,
-		spicy: parseBoolean(data.spicy),
-		vegetarian: parseBoolean(data.vegetarian),
-		preparationTime: parseNumber(data.preparationtime),
-		ingredients: ingredients
+		spicy: configuredFields.spicy ?? parseBoolean(data.spicy),
+		vegetarian: configuredFields.vegetarian ?? parseBoolean(data.vegetarian),
+		preparationTime: configuredFields.preparationTime ?? parseNumber(data.preparationtime),
+		weight: configuredFields.weight ?? parseNumber(data.weight),
+		pieces: configuredFields.pieces ?? parseNumber(data.pieces),
+		calories: configuredFields.calories ?? parseNumber(data.calories),
+		ingredients: configuredFields.ingredients ?? ingredients
 			.split(',')
 			.map((ingredient) => ingredient.trim())
 			.filter(Boolean)

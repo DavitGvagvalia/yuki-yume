@@ -7,11 +7,24 @@ import addProduct, {
 	getProductCategories,
 	getOrderedCategories,
 	getProductsMatchingCategory,
+	getProductSearchValues,
+	normalizeCategoryKey,
+	normalizeCategoryName,
+	normalizeProductWithCategoryOrder,
+	renameCategory,
+	renameCategoryInProduct,
 	sortProductsByCategoryOrder,
 	updateCategoryOrder,
 	updateCategoryProductOrder,
 	updateProduct
 } from '../../services/product.service.js';
+import {
+	PRODUCT_FIELD_TYPES,
+	adminProductFields,
+	createProductFormDefaults,
+	formValuesToProduct,
+	productToFormValues
+} from '../../config/productFields.js';
 import { logoutAdmin } from '../../services/adminAuth.service.js';
 import { useProducts } from '../../hooks/useProducts.jsx';
 import { parseXlsxProducts } from '../../utils/xlsxProductsParser.js';
@@ -22,63 +35,42 @@ import {
 	uploadProductImage
 } from '../../utils/imageHandler.js';
 
-const EMPTY_FORM = {
-	image: '',
-	name: '',
-	price: '',
-	categories: '',
-	sortOrder: '',
-	popular: false,
-	available: true,
-	spicy: false,
-	vegetarian: false,
-	preparationTime: '',
-	ingredients: ''
-};
-
 const POPULAR_CATEGORY = 'POPULAR';
+const PRODUCT_FORM_FIELD_GROUPS = [
+	{
+		title: 'Basic details',
+		fields: ['name', 'price', 'preparationTime', 'sortOrder', 'ingredients']
+	},
+	{
+		title: 'Portion and nutrition',
+		fields: ['weight', 'pieces', 'calories']
+	}
+];
+const ADMIN_FIELDS_BY_KEY = new Map(
+	adminProductFields.map((field) => [field.key, field])
+);
 
 function productToForm(product) {
-	return {
-		image: product.image || '',
-		name: product.name || '',
-		price: product.price ?? '',
-		categories: getProductCategories(product).join(', '),
-		sortOrder: product.sortOrder ?? '',
-		popular: Boolean(product.popular),
-		available: product.available ?? true,
-		spicy: Boolean(product.spicy),
-		vegetarian: Boolean(product.vegetarian),
-		preparationTime: product.preparationTime ?? '',
-		ingredients: Array.isArray(product.ingredients)
-			? product.ingredients.join(', ')
-			: ''
-	};
+	return productToFormValues(product, getProductCategories);
 }
 
-function formToProduct(form) {
+function createEmptyForm() {
+	return createProductFormDefaults();
+}
+
+function formToProduct(form, existingCategories) {
 	const categories = form.categories
-		.split(',')
-		.map((category) => category.trim())
-		.filter((category) => category.toLowerCase() !== 'popular')
+		.map((category) => normalizeCategoryName(category, existingCategories))
 		.filter(Boolean);
+	const productData = formValuesToProduct({
+		...form,
+		categories
+	});
 
 	return {
-		image: form.image.trim(),
-		name: form.name.trim(),
-		price: Number(form.price),
+		...productData,
 		category: categories[0] || '',
-		categories,
-		sortOrder: Number(form.sortOrder || 0),
-		popular: form.popular,
-		available: form.available,
-		spicy: form.spicy,
-		vegetarian: form.vegetarian,
-		preparationTime: Number(form.preparationTime || 0),
-		ingredients: form.ingredients
-			.split(',')
-			.map((ingredient) => ingredient.trim())
-			.filter(Boolean)
+		categories
 	};
 }
 
@@ -295,8 +287,12 @@ function ProductList({
 function CategoryOrderPanel({
 	categories,
 	orderingCategory,
-	onMoveCategory
+	renamingCategory,
+	onMoveCategory,
+	onRenameCategory
 }) {
+	const [renameValues, setRenameValues] = useState({});
+
 	return (
 		<section className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-4">
 			<div>
@@ -313,37 +309,145 @@ function CategoryOrderPanel({
 					{categories.map((category, index) => (
 						<div
 							key={category.name}
-							className="flex items-center gap-3 rounded border border-border bg-background/35 p-3"
+							className="flex flex-col gap-3 rounded border border-border bg-background/35 p-3"
 						>
-							<span className="rounded bg-control px-2 py-1 text-xs text-text-secondary">
-								#{index + 1}
-							</span>
-							<span className="min-w-0 flex-1 truncate font-semibold">
-								{category.name}
-							</span>
-							<div className="flex gap-1">
-								<button
-									type="button"
-									className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-									disabled={index === 0 || orderingCategory === category.name}
-									onClick={() => onMoveCategory(category.name, -1)}
-								>
-									Up
-								</button>
-								<button
-									type="button"
-									className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-									disabled={index === categories.length - 1 || orderingCategory === category.name}
-									onClick={() => onMoveCategory(category.name, 1)}
-								>
-									Down
-								</button>
+							<div className="flex items-center gap-3">
+								<span className="rounded bg-control px-2 py-1 text-xs text-text-secondary">
+									#{index + 1}
+								</span>
+								<span className="min-w-0 flex-1 truncate font-semibold">
+									{category.name}
+								</span>
+								<div className="flex gap-1">
+									<button
+										type="button"
+										className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+										disabled={index === 0 || orderingCategory === category.name}
+										onClick={() => onMoveCategory(category.name, -1)}
+									>
+										Up
+									</button>
+									<button
+										type="button"
+										className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+										disabled={index === categories.length - 1 || orderingCategory === category.name}
+										onClick={() => onMoveCategory(category.name, 1)}
+									>
+										Down
+									</button>
+								</div>
 							</div>
-						</div>
+
+							<form
+								className="flex gap-2"
+								onSubmit={(event) => {
+									event.preventDefault();
+									onRenameCategory(category.name, renameValues[category.name] || '');
+									setRenameValues((currentValues) => ({
+										...currentValues,
+										[category.name]: ''
+									}));
+								}}
+							>
+								<input
+									type="text"
+									value={renameValues[category.name] || ''}
+									placeholder="Rename category"
+									className="min-w-0 flex-1 rounded border border-border bg-control px-2 py-1 text-sm text-text outline-none transition focus:border-accent"
+									onChange={(event) => setRenameValues((currentValues) => ({
+										...currentValues,
+										[category.name]: event.target.value
+									}))}
+								/>
+								<button
+									type="submit"
+									className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+									disabled={renamingCategory === category.name || !String(renameValues[category.name] || '').trim()}
+								>
+									{renamingCategory === category.name ? 'Saving' : 'Rename'}
+								</button>
+							</form>
+							</div>
 					))}
 				</div>
 			)}
 		</section>
+	);
+}
+
+function CategorySelector({ selectedCategories, categories, onChange }) {
+	const [categoryDraft, setCategoryDraft] = useState('');
+
+	function addCategory(categoryName) {
+		const normalizedCategory = normalizeCategoryName(categoryName, categories);
+
+		if (!normalizedCategory) {
+			setCategoryDraft('');
+			return;
+		}
+
+		const nextCategories = [
+			...selectedCategories.filter((category) => (
+				normalizeCategoryKey(category) !== normalizeCategoryKey(normalizedCategory)
+			)),
+			normalizedCategory
+		];
+
+		onChange(nextCategories);
+		setCategoryDraft('');
+	}
+
+	function removeCategory(categoryName) {
+		onChange(selectedCategories.filter((category) => (
+			normalizeCategoryKey(category) !== normalizeCategoryKey(categoryName)
+		)));
+	}
+
+	return (
+		<label className="flex flex-col gap-2 text-sm">
+			<span className="text-text-secondary">Categories</span>
+			<div className="flex min-h-12 flex-wrap gap-2 rounded border border-border bg-control p-2">
+				{selectedCategories.map((category) => (
+					<span
+						key={category}
+						className="flex items-center gap-2 rounded bg-accent-soft px-2 py-1 text-sm text-text"
+					>
+						{category}
+						<button
+							type="button"
+							className="text-muted transition hover:text-danger"
+							aria-label={`Remove ${category}`}
+							onClick={() => removeCategory(category)}
+						>
+							x
+						</button>
+					</span>
+				))}
+				<input
+					type="text"
+					list="product-categories"
+					value={categoryDraft}
+					placeholder={selectedCategories.length === 0 ? 'Sushi, Rolls, Sets' : 'Add category'}
+					className="min-w-40 flex-1 bg-transparent p-1 text-text outline-none"
+					onChange={(event) => setCategoryDraft(event.target.value)}
+					onKeyDown={(event) => {
+						if (event.key === 'Enter' || event.key === ',') {
+							event.preventDefault();
+							addCategory(categoryDraft);
+						}
+					}}
+					onBlur={() => addCategory(categoryDraft)}
+				/>
+				<datalist id="product-categories">
+					{categories.map((category) => (
+						<option key={category} value={category} />
+					))}
+				</datalist>
+			</div>
+			<span className="text-xs text-text-secondary">
+				Type a category and press Enter. Existing categories appear in the dropdown.
+			</span>
+		</label>
 	);
 }
 
@@ -358,6 +462,15 @@ function ProductForm({
 	onSubmit,
 	onDelete
 }) {
+	const fieldGroups = PRODUCT_FORM_FIELD_GROUPS.map((group) => ({
+		...group,
+		fields: group.fields
+			.map((fieldKey) => ADMIN_FIELDS_BY_KEY.get(fieldKey))
+			.filter((field) => field && field.type !== PRODUCT_FIELD_TYPES.boolean)
+	})).filter((group) => group.fields.length > 0);
+	const booleanFields = adminProductFields.filter((field) => (
+		field.admin && field.type === PRODUCT_FIELD_TYPES.boolean
+	));
 	let imageUploadPath = '';
 
 	if (imageFile && form.name) {
@@ -393,73 +506,32 @@ function ProductForm({
 				)}
 			</div>
 
-			<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-				<label className="flex flex-col gap-2 text-sm">
-					<span className="text-text-secondary">Name</span>
-					<input
-						type="text"
-						value={form.name}
-						required
-						onChange={(event) => onChange('name', event.target.value)}
-						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-					/>
-				</label>
-
-				<label className="flex flex-col gap-2 text-sm">
-					<span className="text-text-secondary">Categories</span>
-					<input
-						type="text"
-						list="product-categories"
-						value={form.categories}
-						required
-						placeholder="Sushi, Rolls, Sets"
-						onChange={(event) => onChange('categories', event.target.value)}
-						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-					/>
-					<datalist id="product-categories">
-						{categories.map((category) => (
-							<option key={category} value={category} />
+			{fieldGroups.map((group) => (
+				<section key={group.title} className="flex flex-col gap-3">
+					<h3 className="text-sm font-semibold text-text-secondary">{group.title}</h3>
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						{group.fields.map((field) => (
+							<label key={field.key} className="flex flex-col gap-2 text-sm">
+								<span className="text-text-secondary">{field.label}</span>
+								<input
+									type={field.type === PRODUCT_FIELD_TYPES.number ? 'number' : 'text'}
+									value={form[field.key]}
+									required={field.required}
+									{...(field.inputProps || {})}
+									onChange={(event) => onChange(field.key, event.target.value)}
+									className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
+								/>
+							</label>
 						))}
-					</datalist>
-				</label>
+					</div>
+				</section>
+			))}
 
-				<label className="flex flex-col gap-2 text-sm">
-					<span className="text-text-secondary">Price</span>
-					<input
-						type="number"
-						min="0"
-						step="0.01"
-						value={form.price}
-						required
-						onChange={(event) => onChange('price', event.target.value)}
-						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-					/>
-				</label>
-
-				<label className="flex flex-col gap-2 text-sm">
-					<span className="text-text-secondary">Preparation time</span>
-					<input
-						type="number"
-						min="0"
-						step="1"
-						value={form.preparationTime}
-						onChange={(event) => onChange('preparationTime', event.target.value)}
-						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-					/>
-				</label>
-
-				<label className="flex flex-col gap-2 text-sm">
-					<span className="text-text-secondary">Order in category</span>
-					<input
-						type="number"
-						min="0"
-						step="1"
-						value={form.sortOrder}
-						onChange={(event) => onChange('sortOrder', event.target.value)}
-						className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-					/>
-				</label>
-			</div>
+			<CategorySelector
+				selectedCategories={form.categories}
+				categories={categories}
+				onChange={(nextCategories) => onChange('categories', nextCategories)}
+			/>
 
 			<label className="flex flex-col gap-2 text-sm">
 				<span className="text-text-secondary">Image file</span>
@@ -476,67 +548,17 @@ function ProductForm({
 				)}
 			</label>
 
-			<label className="flex flex-col gap-2 text-sm">
-				<span className="text-text-secondary">Image path</span>
-				<input
-					type="text"
-					value={form.image}
-					required={!imageFile}
-					onChange={(event) => onChange('image', event.target.value)}
-					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-				/>
-				<span className="text-xs text-text-secondary">
-					This is filled automatically after upload. Existing paths can still be edited manually.
-				</span>
-			</label>
-
-			<label className="flex flex-col gap-2 text-sm">
-				<span className="text-text-secondary">Ingredients</span>
-				<input
-					type="text"
-					value={form.ingredients}
-					placeholder="Rice, salmon, avocado"
-					onChange={(event) => onChange('ingredients', event.target.value)}
-					className="rounded border border-border bg-control p-3 text-text outline-none transition focus:border-accent"
-				/>
-			</label>
-
 			<div className="flex flex-wrap gap-4 text-sm">
-				<label className="flex items-center gap-2">
-					<input
-						type="checkbox"
-						checked={form.popular}
-						onChange={(event) => onChange('popular', event.target.checked)}
-					/>
-					<span>Popular</span>
-				</label>
-
-				<label className="flex items-center gap-2">
-					<input
-						type="checkbox"
-						checked={form.available}
-						onChange={(event) => onChange('available', event.target.checked)}
-					/>
-					<span>Available</span>
-				</label>
-
-				<label className="flex items-center gap-2">
-					<input
-						type="checkbox"
-						checked={form.spicy}
-						onChange={(event) => onChange('spicy', event.target.checked)}
-					/>
-					<span>Spicy</span>
-				</label>
-
-				<label className="flex items-center gap-2">
-					<input
-						type="checkbox"
-						checked={form.vegetarian}
-						onChange={(event) => onChange('vegetarian', event.target.checked)}
-					/>
-					<span>Vegetarian</span>
-				</label>
+				{booleanFields.map((field) => (
+					<label key={field.key} className="flex items-center gap-2">
+						<input
+							type="checkbox"
+							checked={Boolean(form[field.key])}
+							onChange={(event) => onChange(field.key, event.target.checked)}
+						/>
+						<span>{field.label}</span>
+					</label>
+				))}
 			</div>
 
 			<button
@@ -565,7 +587,7 @@ export default function AdminMenuPage() {
 		setProducts
 	} = useProducts();
 	const [selectedProduct, setSelectedProduct] = useState(null);
-	const [form, setForm] = useState(EMPTY_FORM);
+	const [form, setForm] = useState(createEmptyForm);
 	const [submitting, setSubmitting] = useState(false);
 	const [importing, setImporting] = useState(false);
 	const [imageFile, setImageFile] = useState(null);
@@ -575,6 +597,7 @@ export default function AdminMenuPage() {
 	const [orderCategory, setOrderCategory] = useState('ALL');
 	const [orderingProductId, setOrderingProductId] = useState(null);
 	const [orderingCategory, setOrderingCategory] = useState(null);
+	const [renamingCategory, setRenamingCategory] = useState(null);
 
 	const orderedCategories = useMemo(() => {
 		return getOrderedCategories(products);
@@ -607,7 +630,7 @@ export default function AdminMenuPage() {
 				getProductCategoryLabel(product),
 				product.popular ? 'popular' : '',
 				ingredients,
-				product.price
+				...getProductSearchValues(product)
 			]
 				.filter((value) => value !== undefined && value !== null)
 				.join(' ')
@@ -619,7 +642,7 @@ export default function AdminMenuPage() {
 
 	function handleCreateMode() {
 		setSelectedProduct(null);
-		setForm(EMPTY_FORM);
+		setForm(createEmptyForm());
 		setImageFile(null);
 		setMessage('');
 		setError('');
@@ -638,27 +661,6 @@ export default function AdminMenuPage() {
 			...currentForm,
 			[field]: value
 		}));
-	}
-
-	function getCategoryOrderForName(categoryName) {
-		const existingCategory = orderedCategories.find((category) => (
-			category.name === categoryName
-		));
-
-		if (existingCategory) {
-			return Number.isFinite(Number(existingCategory.categoryOrder))
-				? Number(existingCategory.categoryOrder)
-				: orderedCategories.indexOf(existingCategory) + 1;
-		}
-
-		return orderedCategories.length + 1;
-	}
-
-	function getCategoryOrdersForNames(categoryNames) {
-		return categoryNames.reduce((categoryOrders, categoryName) => {
-			categoryOrders[categoryName] = getCategoryOrderForName(categoryName);
-			return categoryOrders;
-		}, {});
 	}
 
 	function updateProductsLocally(productsOrUpdater) {
@@ -687,7 +689,15 @@ export default function AdminMenuPage() {
 		setError('');
 
 		try {
-			const productData = formToProduct(form);
+			const productData = formToProduct(form, categories);
+
+			if (!productData.name) {
+				throw new Error('Product name is required.');
+			}
+
+			if (productData.categories.length === 0) {
+				throw new Error('Choose at least one category.');
+			}
 
 			if (imageFile) {
 				productData.image = await uploadProductImage(productData.name, imageFile);
@@ -695,21 +705,20 @@ export default function AdminMenuPage() {
 
 			if (!selectedProduct && !form.sortOrder) {
 				const matchingCategoryProducts = products.filter((product) => (
-					getProductCategories(product).includes(productData.category)
+					getProductCategories(product).some((category) => (
+						normalizeCategoryKey(category) === normalizeCategoryKey(productData.category)
+					))
 				));
 				productData.sortOrder = matchingCategoryProducts.length + 1;
 			}
 
-			productData.categoryOrders = getCategoryOrdersForNames(productData.categories);
-			productData.categoryOrder = productData.category
-				? productData.categoryOrders[productData.category] || 0
-				: 0;
+			const normalizedProductData = normalizeProductWithCategoryOrder(productData, orderedCategories);
 
 			if (selectedProduct) {
-				await updateProduct(selectedProduct.id, productData);
+				await updateProduct(selectedProduct.id, normalizedProductData);
 				const updatedProduct = {
 					...selectedProduct,
-					...productData,
+					...normalizedProductData,
 					id: selectedProduct.id,
 					imageUrl: selectedProduct.imageUrl
 				};
@@ -722,17 +731,17 @@ export default function AdminMenuPage() {
 				setSelectedProduct(updatedProduct);
 				setMessage('Product updated.');
 			} else {
-				const productId = await addProduct(productData);
+				const productId = await addProduct(normalizedProductData);
 				updateProductsLocally((currentProducts) => ([
 					...currentProducts,
 					{
-						...productData,
+						...normalizedProductData,
 						id: productId,
 						imageUrl: null
 					}
 				]));
 				setMessage('Product created.');
-				setForm(EMPTY_FORM);
+				setForm(createEmptyForm());
 			}
 
 			setImageFile(null);
@@ -892,9 +901,6 @@ export default function AdminMenuPage() {
 		const reorderedCategories = [...orderedCategories];
 		const [movedCategory] = reorderedCategories.splice(currentIndex, 1);
 		reorderedCategories.splice(nextIndex, 0, movedCategory);
-		const categoryOrdersByName = new Map(
-			reorderedCategories.map((category, index) => [category.name, index + 1])
-		);
 
 		setOrderingCategory(categoryName);
 		setMessage('');
@@ -907,19 +913,7 @@ export default function AdminMenuPage() {
 					return product;
 				}
 
-				const categoryOrders = productCategories.reduce((orders, productCategory) => {
-					orders[productCategory] = categoryOrdersByName.get(productCategory) || 0;
-					return orders;
-				}, {});
-				const primaryCategory = productCategories[0] || '';
-
-				return {
-					...product,
-					category: primaryCategory,
-					categories: productCategories,
-					categoryOrders,
-					categoryOrder: primaryCategory ? categoryOrders[primaryCategory] || 0 : 0
-				};
+				return normalizeProductWithCategoryOrder(product, reorderedCategories);
 			})
 		));
 
@@ -932,6 +926,39 @@ export default function AdminMenuPage() {
 			setError(orderError.message || 'Unable to update category order.');
 		} finally {
 			setOrderingCategory(null);
+		}
+	}
+
+	async function handleRenameCategory(categoryName, nextCategoryName) {
+		setRenamingCategory(categoryName);
+		setMessage('');
+		setError('');
+
+		try {
+			const normalizedNextCategoryName = normalizeCategoryName(nextCategoryName);
+			const renamedCategoriesInOrder = orderedCategories.map((category) => (
+				normalizeCategoryKey(category.name) === normalizeCategoryKey(categoryName)
+					? { ...category, name: normalizedNextCategoryName }
+					: category
+			));
+
+			await renameCategory(categoryName, normalizedNextCategoryName, products);
+			updateProductsLocally((currentProducts) => (
+				currentProducts.map((product) => (
+					getProductCategories(product).some((productCategory) => (
+						normalizeCategoryKey(productCategory) === normalizeCategoryKey(categoryName)
+					))
+						? renameCategoryInProduct(product, categoryName, normalizedNextCategoryName, renamedCategoriesInOrder)
+						: product
+				))
+			));
+			setMessage('Category renamed.');
+			await refreshProductsQuietly();
+		} catch (renameError) {
+			await refreshProductsQuietly().catch(() => {});
+			setError(renameError.message || 'Unable to rename category.');
+		} finally {
+			setRenamingCategory(null);
 		}
 	}
 
@@ -995,7 +1022,9 @@ export default function AdminMenuPage() {
 						<CategoryOrderPanel
 							categories={orderedCategories}
 							orderingCategory={orderingCategory}
+							renamingCategory={renamingCategory}
 							onMoveCategory={handleMoveCategory}
+							onRenameCategory={handleRenameCategory}
 						/>
 
 						<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,380px)_1fr]">

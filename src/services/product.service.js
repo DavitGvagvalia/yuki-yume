@@ -1,4 +1,8 @@
 import { createProduct, productDefaults } from '../schemes/templates.ts';
+import {
+  getProductSearchValues as getConfiguredProductSearchValues,
+  normalizeConfiguredProductFields
+} from '../config/productFields.js';
 import { db} from '../firebaseConfig.js';
 import {
   collection,
@@ -38,22 +42,70 @@ function normalizeCategoryOrder(value) {
   return Number.isFinite(categoryOrder) ? categoryOrder : Number.MAX_SAFE_INTEGER;
 }
 
-function isPopularCategory(categoryName) {
+export function normalizeCategoryKey(categoryName) {
+  return String(categoryName || '').trim().toLowerCase();
+}
+
+export function isPopularCategory(categoryName) {
   return String(categoryName || '').trim().toLowerCase() === 'popular';
 }
 
-function uniqueStrings(values) {
-  return Array.from(new Set(
-    values
-      .map((value) => String(value || '').trim())
-      .filter((value) => !isPopularCategory(value))
-      .filter(Boolean)
+function toTitleCase(value) {
+  return String(value || '')
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+export function normalizeCategoryName(categoryName, existingCategories = []) {
+  const trimmedCategory = String(categoryName || '').trim();
+
+  if (!trimmedCategory || isPopularCategory(trimmedCategory)) {
+    return '';
+  }
+
+  const matchingCategory = existingCategories.find((existingCategory) => (
+    normalizeCategoryKey(existingCategory) === normalizeCategoryKey(trimmedCategory)
   ));
+
+  return matchingCategory || toTitleCase(trimmedCategory);
+}
+
+function uniqueCategories(values, existingCategories = []) {
+  const categoriesByKey = new Map();
+
+  values.forEach((value) => {
+    const category = normalizeCategoryName(value, [
+      ...existingCategories,
+      ...categoriesByKey.values()
+    ]);
+    const key = normalizeCategoryKey(category);
+
+    if (category && !categoriesByKey.has(key)) {
+      categoriesByKey.set(key, category);
+    }
+  });
+
+  return Array.from(categoriesByKey.values());
+}
+
+function findValueByCategoryKey(valuesByCategory, categoryName) {
+  if (!valuesByCategory || typeof valuesByCategory !== 'object') {
+    return undefined;
+  }
+
+  const categoryKey = normalizeCategoryKey(categoryName);
+  const matchingKey = Object.keys(valuesByCategory).find((key) => (
+    normalizeCategoryKey(key) === categoryKey
+  ));
+
+  return matchingKey ? valuesByCategory[matchingKey] : undefined;
 }
 
 export function getProductCategories(product) {
   if (Array.isArray(product.categories)) {
-    const categories = uniqueStrings(product.categories);
+    const categories = uniqueCategories(product.categories);
 
     if (categories.length > 0) {
       return categories;
@@ -66,11 +118,19 @@ export function getProductCategories(product) {
 }
 
 export function productMatchesCategory(product, categoryName) {
-  return getProductCategories(product).includes(categoryName);
+  const targetCategoryKey = normalizeCategoryKey(categoryName);
+
+  return getProductCategories(product).some((category) => (
+    normalizeCategoryKey(category) === targetCategoryKey
+  ));
 }
 
 export function getProductCategoryLabel(product) {
-  return getProductCategories(product).join(', ');
+  return getProductCategories(product).join(' / ');
+}
+
+export function getProductSearchValues(product) {
+  return getConfiguredProductSearchValues(product);
 }
 
 export function isProductVisible(product) {
@@ -81,13 +141,13 @@ function getProductCategoryOrder(product, categoryName) {
   const categoryOrders = product.categoryOrders && typeof product.categoryOrders === 'object'
     ? product.categoryOrders
     : {};
-  const categorySpecificOrder = Number(categoryOrders[categoryName]);
+  const categorySpecificOrder = Number(findValueByCategoryKey(categoryOrders, categoryName));
 
   if (Number.isFinite(categorySpecificOrder)) {
     return categorySpecificOrder;
   }
 
-  if (String(product.category || '').trim() === categoryName) {
+  if (normalizeCategoryKey(product.category) === normalizeCategoryKey(categoryName)) {
     return normalizeCategoryOrder(product.categoryOrder);
   }
 
@@ -108,16 +168,22 @@ function getPrimaryCategoryOrder(product) {
   return getProductCategoryOrder(product, primaryCategory);
 }
 
-function buildCategoryOrders(categories, getCategoryOrder) {
+export function buildCategoryOrders(categories, getCategoryOrder) {
   return categories.reduce((categoryOrders, categoryName) => {
     categoryOrders[categoryName] = getCategoryOrder(categoryName);
     return categoryOrders;
   }, {});
 }
 
-function normalizeProductCategoryFields(product, getCategoryOrder = () => 0) {
+function normalizeProductCategoryFields(product, getCategoryOrder) {
   const categories = getProductCategories(product);
-  const categoryOrders = buildCategoryOrders(categories, getCategoryOrder);
+  const categoryOrders = buildCategoryOrders(categories, (categoryName) => {
+    const categoryOrder = typeof getCategoryOrder === 'function'
+      ? getCategoryOrder(categoryName)
+      : getProductCategoryOrder(product, categoryName);
+
+    return normalizeCategoryOrder(categoryOrder) === Number.MAX_SAFE_INTEGER ? 0 : categoryOrder;
+  });
   const primaryCategory = categories[0] || '';
 
   return {
@@ -127,6 +193,12 @@ function normalizeProductCategoryFields(product, getCategoryOrder = () => 0) {
     categoryOrders,
     categoryOrder: primaryCategory ? categoryOrders[primaryCategory] || 0 : 0
   };
+}
+
+export function normalizeProductForSave(product, getCategoryOrder = () => 0) {
+  return normalizeConfiguredProductFields(
+    normalizeProductCategoryFields(product, getCategoryOrder)
+  );
 }
 
 export function sortProductsForCategory(products, categoryName) {
@@ -169,17 +241,17 @@ export function createCategoryOrderMap(products) {
 function mergeProductWithCategoryFields(product) {
   const orderedCategoryMap = createCategoryOrderMap([product]);
 
-  return normalizeProductCategoryFields(product, (categoryName) => {
+  return normalizeProductForSave(product, (categoryName) => {
     const existingCategoryOrders = product.categoryOrders && typeof product.categoryOrders === 'object'
       ? product.categoryOrders
       : {};
-    const categoryOrder = Number(existingCategoryOrders[categoryName]);
+    const categoryOrder = Number(findValueByCategoryKey(existingCategoryOrders, categoryName));
 
     if (Number.isFinite(categoryOrder) && categoryOrder > 0) {
       return categoryOrder;
     }
 
-    if (String(product.category || '').trim() === categoryName) {
+    if (normalizeCategoryKey(product.category) === normalizeCategoryKey(categoryName)) {
       const legacyCategoryOrder = Number(product.categoryOrder);
 
       if (Number.isFinite(legacyCategoryOrder) && legacyCategoryOrder > 0) {
@@ -196,11 +268,12 @@ export function getOrderedCategories(products) {
 
   products.forEach((product) => {
     getProductCategories(product).forEach((name) => {
-      const currentCategory = categoriesByName.get(name);
+      const categoryKey = normalizeCategoryKey(name);
+      const currentCategory = categoriesByName.get(categoryKey);
       const categoryOrder = getProductCategoryOrder(product, name);
 
       if (!currentCategory || categoryOrder < currentCategory.categoryOrder) {
-        categoriesByName.set(name, {
+        categoriesByName.set(categoryKey, {
           name,
           categoryOrder
         });
@@ -225,6 +298,35 @@ export function getOrderedCategories(products) {
       ? index + 1
       : category.categoryOrder
   }));
+}
+
+export function getCategoryOrderForName(categoriesInOrder, categoryName) {
+  const categoryIndex = categoriesInOrder.findIndex((category) => (
+    normalizeCategoryKey(category.name) === normalizeCategoryKey(categoryName)
+  ));
+
+  return categoryIndex === -1 ? 0 : categoryIndex + 1;
+}
+
+export function normalizeProductWithCategoryOrder(product, categoriesInOrder) {
+  return normalizeProductForSave(product, (categoryName) => (
+    getCategoryOrderForName(categoriesInOrder, categoryName)
+  ));
+}
+
+export function renameCategoryInProduct(product, oldCategoryName, newCategoryName, categoriesInOrder) {
+  const oldCategoryKey = normalizeCategoryKey(oldCategoryName);
+  const renamedCategories = getProductCategories(product).map((categoryName) => (
+    normalizeCategoryKey(categoryName) === oldCategoryKey
+      ? newCategoryName
+      : categoryName
+  ));
+
+  return normalizeProductWithCategoryOrder({
+    ...product,
+    categories: renamedCategories,
+    category: renamedCategories[0] || ''
+  }, categoriesInOrder);
 }
 
 export function sortProductsByCategoryOrder(products) {
@@ -260,7 +362,7 @@ export async function getProductsRaw() {
 
   return sortProductsByCategoryOrder(querySnapshot.docs.map(doc => ({
     id: doc.id,
-    ...doc.data()
+    ...normalizeProductForSave(doc.data())
   })));
 }
 
@@ -305,7 +407,17 @@ export async function updateCategoryProductOrder(productsInOrder) {
 
         productsInOrder.forEach((product, index) => {
             const productRef = doc(db, 'products', product.id);
-            batch.update(productRef, { sortOrder: index + 1 });
+            const normalizedProduct = normalizeProductForSave({
+              ...product,
+              sortOrder: index + 1
+            });
+
+            batch.update(productRef, {
+              sortOrder: normalizedProduct.sortOrder,
+              weight: normalizedProduct.weight,
+              pieces: normalizedProduct.pieces,
+              calories: normalizedProduct.calories
+            });
         });
 
         await batch.commit();
@@ -322,27 +434,18 @@ export async function updateCategoryOrder(categoriesInOrder, products) {
             const batch = writeBatch(db);
 
             products.slice(start, start + 500).forEach((product) => {
-                const productCategories = getProductCategories(product);
+                const normalizedProduct = normalizeProductWithCategoryOrder(product, categoriesInOrder);
 
-                if (productCategories.length === 0) {
+                if (normalizedProduct.categories.length === 0) {
                     return;
                 }
 
-                const categoryOrders = buildCategoryOrders(productCategories, (categoryName) => {
-                    const categoryIndex = categoriesInOrder.findIndex((category) => (
-                        category.name === categoryName
-                    ));
-
-                    return categoryIndex === -1 ? 0 : categoryIndex + 1;
-                });
-                const primaryCategory = productCategories[0] || '';
-                const primaryCategoryOrder = primaryCategory ? categoryOrders[primaryCategory] || 0 : 0;
                 const productRef = doc(db, 'products', product.id);
                 batch.update(productRef, {
-                    category: primaryCategory,
-                    categories: productCategories,
-                    categoryOrder: primaryCategoryOrder,
-                    categoryOrders
+                    category: normalizedProduct.category,
+                    categories: normalizedProduct.categories,
+                    categoryOrder: normalizedProduct.categoryOrder,
+                    categoryOrders: normalizedProduct.categoryOrders
                 });
             });
 
@@ -354,6 +457,66 @@ export async function updateCategoryOrder(categoriesInOrder, products) {
         console.error('Error updating category order:', error);
         throw error;
     }
+}
+
+export async function renameCategory(oldCategoryName, newCategoryName, products) {
+    const trimmedNewCategoryName = normalizeCategoryName(newCategoryName);
+    const oldCategoryKey = normalizeCategoryKey(oldCategoryName);
+    const newCategoryKey = normalizeCategoryKey(trimmedNewCategoryName);
+
+    if (!oldCategoryKey || !newCategoryKey) {
+        throw new Error('Choose a valid category name.');
+    }
+
+    if (isPopularCategory(oldCategoryName) || isPopularCategory(trimmedNewCategoryName)) {
+        throw new Error('POPULAR is managed automatically and cannot be renamed.');
+    }
+
+    if (oldCategoryKey === newCategoryKey) {
+        return;
+    }
+
+    const orderedCategories = getOrderedCategories(products);
+    const categoryCollision = orderedCategories.some((category) => (
+        normalizeCategoryKey(category.name) === newCategoryKey &&
+        normalizeCategoryKey(category.name) !== oldCategoryKey
+    ));
+
+    if (categoryCollision) {
+        throw new Error('A category with that name already exists.');
+    }
+
+    const renamedCategoriesInOrder = orderedCategories.map((category) => (
+        normalizeCategoryKey(category.name) === oldCategoryKey
+            ? { ...category, name: trimmedNewCategoryName }
+            : category
+    ));
+    const productsToRename = products.filter((product) => productMatchesCategory(product, oldCategoryName));
+
+    for (let start = 0; start < productsToRename.length; start += 500) {
+        const batch = writeBatch(db);
+
+        productsToRename.slice(start, start + 500).forEach((product) => {
+            const renamedProduct = renameCategoryInProduct(
+                product,
+                oldCategoryName,
+                trimmedNewCategoryName,
+                renamedCategoriesInOrder
+            );
+            const productRef = doc(db, 'products', product.id);
+
+            batch.update(productRef, {
+                category: renamedProduct.category,
+                categories: renamedProduct.categories,
+                categoryOrder: renamedProduct.categoryOrder,
+                categoryOrders: renamedProduct.categoryOrders
+            });
+        });
+
+        await batch.commit();
+    }
+
+    clearProductsCache();
 }
 
 export async function deleteProduct(productId) {
@@ -397,11 +560,12 @@ export async function batchAddProducts(products) {
     });
 
     products.forEach((product, index) => {
-      const productName = normalizeProductName(product.name);
-      const categories = getProductCategories(product);
+      const normalizedInputProduct = normalizeProductForSave(product);
+      const productName = normalizeProductName(normalizedInputProduct.name);
+      const categories = getProductCategories(normalizedInputProduct);
       const category = categories[0] || '';
-      const parsedSortOrder = Number(product.sortOrder);
-      const parsedCategoryOrder = Number(product.categoryOrder);
+      const parsedSortOrder = Number(normalizedInputProduct.sortOrder);
+      const parsedCategoryOrder = Number(normalizedInputProduct.categoryOrder);
       const existingCategoryOrder = categoryOrderMap.get(category) || 0;
       const sortOrder = Number.isFinite(parsedSortOrder) && parsedSortOrder > 0
         ? parsedSortOrder
@@ -416,7 +580,7 @@ export async function batchAddProducts(products) {
       }
 
       if (knownProductNames.has(productName)) {
-        skipped.push(product.name);
+        skipped.push(normalizedInputProduct.name);
         return;
       }
 
@@ -430,8 +594,8 @@ export async function batchAddProducts(products) {
       });
       productsToAdd.push({
         ...productDefaults,
-        ...product,
-        name: product.name.trim(),
+        ...normalizedInputProduct,
+        name: normalizedInputProduct.name.trim(),
         category,
         categories,
         categoryOrder,
@@ -440,14 +604,7 @@ export async function batchAddProducts(products) {
           (categoryName) => categoryOrderMap.get(categoryName) || categoryOrder
         ),
         sortOrder,
-        image: String(product.image || '').trim(),
-        price: Number(product.price) || 0,
-        preparationTime: Number(product.preparationTime) || 0,
-        ingredients: Array.isArray(product.ingredients) ? product.ingredients : [],
-        popular: Boolean(product.popular),
-        available: product.available ?? true,
-        spicy: Boolean(product.spicy),
-        vegetarian: Boolean(product.vegetarian)
+        image: String(normalizedInputProduct.image || '').trim()
       });
     });
 
