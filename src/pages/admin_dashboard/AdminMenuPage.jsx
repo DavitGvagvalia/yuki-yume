@@ -4,20 +4,23 @@ import addProduct, {
 	batchAddProducts,
 	deleteProduct,
 	getProductCategoryLabel,
-	getProductCategories,
-	getOrderedCategories,
+	getProductCategoryIds,
 	getProductsMatchingCategory,
 	getProductSearchValues,
-	normalizeCategoryKey,
-	normalizeCategoryName,
-	normalizeProductWithCategoryOrder,
-	renameCategory,
-	renameCategoryInProduct,
 	sortProductsByCategoryOrder,
-	updateCategoryOrder,
 	updateCategoryProductOrder,
 	updateProduct
 } from '../../services/product.service.js';
+import {
+	addCategory,
+	deleteCategory,
+	getCategoryIdsByNames,
+	getUnknownCategoryNames,
+	normalizeCategoryName,
+	renameCategory,
+	sortCategories,
+	updateCategoryOrder
+} from '../../services/category.service.js';
 import {
 	PRODUCT_FIELD_TYPES,
 	adminProductFields,
@@ -27,6 +30,7 @@ import {
 } from '../../config/productFields.js';
 import { logoutAdmin } from '../../services/adminAuth.service.js';
 import { useProducts } from '../../hooks/useProducts.jsx';
+import { useCategories } from '../../hooks/useCategories.jsx';
 import { parseXlsxProducts } from '../../utils/xlsxProductsParser.js';
 import {
 	createImageFileMap,
@@ -51,26 +55,25 @@ const ADMIN_FIELDS_BY_KEY = new Map(
 );
 
 function productToForm(product) {
-	return productToFormValues(product, getProductCategories);
+	return productToFormValues(product, getProductCategoryIds);
 }
 
 function createEmptyForm() {
 	return createProductFormDefaults();
 }
 
-function formToProduct(form, existingCategories) {
-	const categories = form.categories
-		.map((category) => normalizeCategoryName(category, existingCategories))
-		.filter(Boolean);
+function formToProduct(form) {
+	const categoryIds = Array.isArray(form.categoryIds)
+		? form.categoryIds.map((categoryId) => String(categoryId || '').trim()).filter(Boolean)
+		: [];
 	const productData = formValuesToProduct({
 		...form,
-		categories
+		categoryIds
 	});
 
 	return {
 		...productData,
-		category: categories[0] || '',
-		categories
+		categoryIds
 	};
 }
 
@@ -190,7 +193,7 @@ function ProductList({
 					<option value="ALL">All categories</option>
 					<option value={POPULAR_CATEGORY}>{POPULAR_CATEGORY}</option>
 					{categories.map((category) => (
-						<option key={category} value={category}>{category}</option>
+						<option key={category.id} value={category.id}>{category.name}</option>
 					))}
 				</select>
 				<span className="text-xs text-text-secondary">
@@ -254,7 +257,7 @@ function ProductList({
 								<span className="min-w-0 flex-1">
 									<span className="block truncate font-semibold">{product.name}</span>
 									<span className="block text-sm text-text-secondary">
-										{getProductCategoryLabel(product) || 'No category'} · {product.price}₾
+										{getProductCategoryLabel(product, categories) || 'No category'} · {product.price}₾
 										{product.popular && ' · popular'}
 										{Number.isFinite(Number(product.sortOrder)) && (
 											<> · #{Number(product.sortOrder)}</>
@@ -288,10 +291,15 @@ function CategoryOrderPanel({
 	categories,
 	orderingCategory,
 	renamingCategory,
+	deletingCategory,
+	creatingCategory,
 	onMoveCategory,
-	onRenameCategory
+	onRenameCategory,
+	onCreateCategory,
+	onDeleteCategory
 }) {
 	const [renameValues, setRenameValues] = useState({});
+	const [categoryDraft, setCategoryDraft] = useState('');
 
 	return (
 		<section className="flex flex-col gap-4 rounded-lg border border-border bg-panel p-4">
@@ -302,13 +310,37 @@ function CategoryOrderPanel({
 				</p>
 			</div>
 
+			<form
+				className="flex flex-col gap-2 sm:flex-row"
+				onSubmit={(event) => {
+					event.preventDefault();
+					onCreateCategory(categoryDraft);
+					setCategoryDraft('');
+				}}
+			>
+				<input
+					type="text"
+					value={categoryDraft}
+					placeholder="New category"
+					className="min-w-0 flex-1 rounded border border-border bg-control px-3 py-2 text-sm text-text outline-none transition focus:border-accent"
+					onChange={(event) => setCategoryDraft(event.target.value)}
+				/>
+				<button
+					type="submit"
+					className="rounded border border-border bg-control px-4 py-2 text-sm transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
+					disabled={creatingCategory || !categoryDraft.trim()}
+				>
+					{creatingCategory ? 'Creating' : 'Create category'}
+				</button>
+			</form>
+
 			{categories.length === 0 ? (
 				<p className="text-sm text-text-secondary">No categories found.</p>
 			) : (
 				<div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
 					{categories.map((category, index) => (
 						<div
-							key={category.name}
+							key={category.id}
 							className="flex flex-col gap-3 rounded border border-border bg-background/35 p-3"
 						>
 							<div className="flex items-center gap-3">
@@ -322,16 +354,16 @@ function CategoryOrderPanel({
 									<button
 										type="button"
 										className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-										disabled={index === 0 || orderingCategory === category.name}
-										onClick={() => onMoveCategory(category.name, -1)}
+										disabled={index === 0 || orderingCategory === category.id}
+										onClick={() => onMoveCategory(category.id, -1)}
 									>
 										Up
 									</button>
 									<button
 										type="button"
 										className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-										disabled={index === categories.length - 1 || orderingCategory === category.name}
-										onClick={() => onMoveCategory(category.name, 1)}
+										disabled={index === categories.length - 1 || orderingCategory === category.id}
+										onClick={() => onMoveCategory(category.id, 1)}
 									>
 										Down
 									</button>
@@ -342,29 +374,37 @@ function CategoryOrderPanel({
 								className="flex gap-2"
 								onSubmit={(event) => {
 									event.preventDefault();
-									onRenameCategory(category.name, renameValues[category.name] || '');
+									onRenameCategory(category.id, renameValues[category.id] || '');
 									setRenameValues((currentValues) => ({
 										...currentValues,
-										[category.name]: ''
+										[category.id]: ''
 									}));
 								}}
 							>
 								<input
 									type="text"
-									value={renameValues[category.name] || ''}
+									value={renameValues[category.id] || ''}
 									placeholder="Rename category"
 									className="min-w-0 flex-1 rounded border border-border bg-control px-2 py-1 text-sm text-text outline-none transition focus:border-accent"
 									onChange={(event) => setRenameValues((currentValues) => ({
 										...currentValues,
-										[category.name]: event.target.value
+										[category.id]: event.target.value
 									}))}
 								/>
 								<button
 									type="submit"
 									className="rounded border border-border bg-control px-2 py-1 text-xs transition hover:border-accent hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
-									disabled={renamingCategory === category.name || !String(renameValues[category.name] || '').trim()}
+									disabled={renamingCategory === category.id || !String(renameValues[category.id] || '').trim()}
 								>
-									{renamingCategory === category.name ? 'Saving' : 'Rename'}
+									{renamingCategory === category.id ? 'Saving' : 'Rename'}
+								</button>
+								<button
+									type="button"
+									className="rounded border border-danger px-2 py-1 text-xs text-danger transition hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-40"
+									disabled={deletingCategory === category.id}
+									onClick={() => onDeleteCategory(category)}
+								>
+									{deletingCategory === category.id ? 'Deleting' : 'Delete'}
 								</button>
 							</form>
 							</div>
@@ -375,79 +415,37 @@ function CategoryOrderPanel({
 	);
 }
 
-function CategorySelector({ selectedCategories, categories, onChange }) {
-	const [categoryDraft, setCategoryDraft] = useState('');
-
-	function addCategory(categoryName) {
-		const normalizedCategory = normalizeCategoryName(categoryName, categories);
-
-		if (!normalizedCategory) {
-			setCategoryDraft('');
+function CategorySelector({ selectedCategoryIds, categories, onChange }) {
+	function toggleCategory(categoryId) {
+		if (selectedCategoryIds.includes(categoryId)) {
+			onChange(selectedCategoryIds.filter((selectedCategoryId) => selectedCategoryId !== categoryId));
 			return;
 		}
 
-		const nextCategories = [
-			...selectedCategories.filter((category) => (
-				normalizeCategoryKey(category) !== normalizeCategoryKey(normalizedCategory)
-			)),
-			normalizedCategory
-		];
-
-		onChange(nextCategories);
-		setCategoryDraft('');
-	}
-
-	function removeCategory(categoryName) {
-		onChange(selectedCategories.filter((category) => (
-			normalizeCategoryKey(category) !== normalizeCategoryKey(categoryName)
-		)));
+		onChange([...selectedCategoryIds, categoryId]);
 	}
 
 	return (
-		<label className="flex flex-col gap-2 text-sm">
+		<div className="flex flex-col gap-2 text-sm">
 			<span className="text-text-secondary">Categories</span>
-			<div className="flex min-h-12 flex-wrap gap-2 rounded border border-border bg-control p-2">
-				{selectedCategories.map((category) => (
-					<span
-						key={category}
-						className="flex items-center gap-2 rounded bg-accent-soft px-2 py-1 text-sm text-text"
-					>
-						{category}
-						<button
-							type="button"
-							className="text-muted transition hover:text-danger"
-							aria-label={`Remove ${category}`}
-							onClick={() => removeCategory(category)}
-						>
-							x
-						</button>
-					</span>
+			<div className="grid grid-cols-1 gap-2 rounded border border-border bg-control p-3 sm:grid-cols-2">
+				{categories.length === 0 ? (
+					<p className="text-xs text-text-secondary">Create a category before assigning products.</p>
+				) : categories.map((category) => (
+					<label key={category.id} className="flex items-center gap-2 rounded bg-background/30 px-2 py-1">
+						<input
+							type="checkbox"
+							checked={selectedCategoryIds.includes(category.id)}
+							onChange={() => toggleCategory(category.id)}
+						/>
+						<span>{category.name}</span>
+					</label>
 				))}
-				<input
-					type="text"
-					list="product-categories"
-					value={categoryDraft}
-					placeholder={selectedCategories.length === 0 ? 'Sushi, Rolls, Sets' : 'Add category'}
-					className="min-w-40 flex-1 bg-transparent p-1 text-text outline-none"
-					onChange={(event) => setCategoryDraft(event.target.value)}
-					onKeyDown={(event) => {
-						if (event.key === 'Enter' || event.key === ',') {
-							event.preventDefault();
-							addCategory(categoryDraft);
-						}
-					}}
-					onBlur={() => addCategory(categoryDraft)}
-				/>
-				<datalist id="product-categories">
-					{categories.map((category) => (
-						<option key={category} value={category} />
-					))}
-				</datalist>
 			</div>
 			<span className="text-xs text-text-secondary">
-				Type a category and press Enter. Existing categories appear in the dropdown.
+				Products can only use categories that exist in the category table.
 			</span>
-		</label>
+		</div>
 	);
 }
 
@@ -528,9 +526,9 @@ function ProductForm({
 			))}
 
 			<CategorySelector
-				selectedCategories={form.categories}
+				selectedCategoryIds={form.categoryIds}
 				categories={categories}
-				onChange={(nextCategories) => onChange('categories', nextCategories)}
+				onChange={(nextCategoryIds) => onChange('categoryIds', nextCategoryIds)}
 			/>
 
 			<label className="flex flex-col gap-2 text-sm">
@@ -580,16 +578,25 @@ export default function AdminMenuPage() {
 	const navigate = useNavigate();
 	const {
 		products,
-		loading,
+		loading: productsLoading,
 		refreshing,
 		error: loadError,
 		refreshProducts,
 		setProducts
 	} = useProducts();
+	const {
+		categories,
+		loading: categoriesLoading,
+		refreshing: refreshingCategories,
+		error: categoriesLoadError,
+		refreshCategories,
+		setCategories
+	} = useCategories();
 	const [selectedProduct, setSelectedProduct] = useState(null);
 	const [form, setForm] = useState(createEmptyForm);
 	const [submitting, setSubmitting] = useState(false);
 	const [importing, setImporting] = useState(false);
+	const [creatingCategory, setCreatingCategory] = useState(false);
 	const [imageFile, setImageFile] = useState(null);
 	const [message, setMessage] = useState('');
 	const [error, setError] = useState('');
@@ -598,14 +605,9 @@ export default function AdminMenuPage() {
 	const [orderingProductId, setOrderingProductId] = useState(null);
 	const [orderingCategory, setOrderingCategory] = useState(null);
 	const [renamingCategory, setRenamingCategory] = useState(null);
-
-	const orderedCategories = useMemo(() => {
-		return getOrderedCategories(products);
-	}, [products]);
-
-	const categories = useMemo(() => (
-		orderedCategories.map((category) => category.name)
-	), [orderedCategories]);
+	const [deletingCategory, setDeletingCategory] = useState(null);
+	const orderedCategories = categories;
+	const loading = productsLoading || categoriesLoading;
 
 	const productsByCategory = useMemo(() => {
 		return getProductsMatchingCategory(products, orderCategory);
@@ -627,7 +629,7 @@ export default function AdminMenuPage() {
 				: '';
 			const searchableValue = [
 				product.name,
-				getProductCategoryLabel(product),
+				getProductCategoryLabel(product, categories),
 				product.popular ? 'popular' : '',
 				ingredients,
 				...getProductSearchValues(product)
@@ -638,7 +640,7 @@ export default function AdminMenuPage() {
 
 			return searchableValue.includes(query);
 		});
-	}, [products, orderCategory, searchTerm]);
+	}, [products, categories, orderCategory, searchTerm]);
 
 	function handleCreateMode() {
 		setSelectedProduct(null);
@@ -669,12 +671,16 @@ export default function AdminMenuPage() {
 				? productsOrUpdater(currentProducts)
 				: productsOrUpdater;
 
-			return sortProductsByCategoryOrder(nextProducts);
+			return sortProductsByCategoryOrder(nextProducts, categories);
 		});
 	}
 
 	function refreshProductsQuietly() {
 		return refreshProducts({ useCache: false, showLoading: false });
+	}
+
+	function refreshCategoriesQuietly() {
+		return refreshCategories({ useCache: false, showLoading: false });
 	}
 
 	async function handleLogout() {
@@ -689,13 +695,13 @@ export default function AdminMenuPage() {
 		setError('');
 
 		try {
-			const productData = formToProduct(form, categories);
+			const productData = formToProduct(form);
 
 			if (!productData.name) {
 				throw new Error('Product name is required.');
 			}
 
-			if (productData.categories.length === 0) {
+			if (productData.categoryIds.length === 0) {
 				throw new Error('Choose at least one category.');
 			}
 
@@ -705,14 +711,12 @@ export default function AdminMenuPage() {
 
 			if (!selectedProduct && !form.sortOrder) {
 				const matchingCategoryProducts = products.filter((product) => (
-					getProductCategories(product).some((category) => (
-						normalizeCategoryKey(category) === normalizeCategoryKey(productData.category)
-					))
+					getProductCategoryIds(product).includes(productData.categoryIds[0])
 				));
 				productData.sortOrder = matchingCategoryProducts.length + 1;
 			}
 
-			const normalizedProductData = normalizeProductWithCategoryOrder(productData, orderedCategories);
+			const normalizedProductData = productData;
 
 			if (selectedProduct) {
 				await updateProduct(selectedProduct.id, normalizedProductData);
@@ -772,6 +776,24 @@ export default function AdminMenuPage() {
 
 		try {
 			const parsedProducts = await parseXlsxProducts(file);
+			const productsForImport = parsedProducts.map((product) => {
+				const sourceCategoryNames = Array.isArray(product.categories)
+					? product.categories
+					: String(product.category || '').split(',').map((category) => category.trim()).filter(Boolean);
+				const unknownCategoryNames = getUnknownCategoryNames(sourceCategoryNames, categories);
+
+				if (unknownCategoryNames.length > 0) {
+					return {
+						...product,
+						_invalidReason: `Unknown category: ${unknownCategoryNames.join(', ')}`
+					};
+				}
+
+				return {
+					...product,
+					categoryIds: getCategoryIdsByNames(sourceCategoryNames, categories)
+				};
+			});
 			const imageFileMap = createImageFileMap(imageFiles);
 			const knownProductNames = new Set(
 				products.map((product) => createSafeImageName(product.name))
@@ -779,11 +801,12 @@ export default function AdminMenuPage() {
 			const uploadProductNames = new Set();
 			let uploadedImages = 0;
 
-			for (const product of parsedProducts) {
+			for (const product of productsForImport) {
 				const safeProductName = createSafeImageName(product.name);
 				const matchingImage = imageFileMap.get(safeProductName);
 
 				if (
+					product._invalidReason ||
 					!safeProductName ||
 					knownProductNames.has(safeProductName) ||
 					uploadProductNames.has(safeProductName)
@@ -799,7 +822,7 @@ export default function AdminMenuPage() {
 				}
 			}
 
-			const result = await batchAddProducts(parsedProducts);
+			const result = await batchAddProducts(productsForImport);
 			const skippedCount = result.skipped.length;
 			const invalidCount = result.invalid.length;
 			const unmatchedImages = Math.max(imageFiles.length - uploadedImages, 0);
@@ -888,9 +911,9 @@ export default function AdminMenuPage() {
 		}
 	}
 
-	async function handleMoveCategory(categoryName, direction) {
+	async function handleMoveCategory(categoryId, direction) {
 		const currentIndex = orderedCategories.findIndex((category) => (
-			category.name === categoryName
+			category.id === categoryId
 		));
 		const nextIndex = currentIndex + direction;
 
@@ -902,63 +925,90 @@ export default function AdminMenuPage() {
 		const [movedCategory] = reorderedCategories.splice(currentIndex, 1);
 		reorderedCategories.splice(nextIndex, 0, movedCategory);
 
-		setOrderingCategory(categoryName);
+		setOrderingCategory(categoryId);
 		setMessage('');
 		setError('');
-		updateProductsLocally((currentProducts) => (
-			currentProducts.map((product) => {
-				const productCategories = getProductCategories(product);
-
-				if (productCategories.length === 0) {
-					return product;
-				}
-
-				return normalizeProductWithCategoryOrder(product, reorderedCategories);
-			})
-		));
+		setCategories(reorderedCategories.map((category, index) => ({
+			...category,
+			sortOrder: index + 1
+		})));
 
 		try {
-			await updateCategoryOrder(reorderedCategories, products);
+			await updateCategoryOrder(reorderedCategories);
 			setMessage('Category order updated.');
-			await refreshProductsQuietly();
+			await refreshCategoriesQuietly();
 		} catch (orderError) {
-			await refreshProductsQuietly().catch(() => {});
+			await refreshCategoriesQuietly().catch(() => {});
 			setError(orderError.message || 'Unable to update category order.');
 		} finally {
 			setOrderingCategory(null);
 		}
 	}
 
-	async function handleRenameCategory(categoryName, nextCategoryName) {
-		setRenamingCategory(categoryName);
+	async function handleCreateCategory(categoryName) {
+		setCreatingCategory(true);
 		setMessage('');
 		setError('');
 
 		try {
-			const normalizedNextCategoryName = normalizeCategoryName(nextCategoryName);
-			const renamedCategoriesInOrder = orderedCategories.map((category) => (
-				normalizeCategoryKey(category.name) === normalizeCategoryKey(categoryName)
-					? { ...category, name: normalizedNextCategoryName }
-					: category
-			));
+			const createdCategory = await addCategory(categoryName, categories);
 
-			await renameCategory(categoryName, normalizedNextCategoryName, products);
-			updateProductsLocally((currentProducts) => (
-				currentProducts.map((product) => (
-					getProductCategories(product).some((productCategory) => (
-						normalizeCategoryKey(productCategory) === normalizeCategoryKey(categoryName)
-					))
-						? renameCategoryInProduct(product, categoryName, normalizedNextCategoryName, renamedCategoriesInOrder)
-						: product
+			setCategories((currentCategories) => sortCategories([...currentCategories, createdCategory]));
+			setMessage('Category created.');
+			await refreshCategoriesQuietly();
+		} catch (createError) {
+			setError(createError.message || 'Unable to create category.');
+		} finally {
+			setCreatingCategory(false);
+		}
+	}
+
+	async function handleRenameCategory(categoryId, nextCategoryName) {
+		setRenamingCategory(categoryId);
+		setMessage('');
+		setError('');
+
+		try {
+			const normalizedNextCategoryName = normalizeCategoryName(nextCategoryName, categories);
+
+			await renameCategory(categoryId, normalizedNextCategoryName, categories);
+			setCategories((currentCategories) => (
+				currentCategories.map((category) => (
+					category.id === categoryId
+						? { ...category, name: normalizedNextCategoryName }
+						: category
 				))
 			));
 			setMessage('Category renamed.');
-			await refreshProductsQuietly();
+			await refreshCategoriesQuietly();
 		} catch (renameError) {
-			await refreshProductsQuietly().catch(() => {});
+			await refreshCategoriesQuietly().catch(() => {});
 			setError(renameError.message || 'Unable to rename category.');
 		} finally {
 			setRenamingCategory(null);
+		}
+	}
+
+	async function handleDeleteCategory(category) {
+		const confirmed = window.confirm(`Delete ${category.name}?`);
+
+		if (!confirmed) {
+			return;
+		}
+
+		setDeletingCategory(category.id);
+		setMessage('');
+		setError('');
+
+		try {
+			await deleteCategory(category.id);
+			setCategories((currentCategories) => currentCategories.filter((item) => item.id !== category.id));
+			setMessage('Category deleted.');
+			await refreshCategoriesQuietly();
+		} catch (deleteError) {
+			setError(deleteError.message || 'Unable to delete category.');
+		} finally {
+			setDeletingCategory(null);
 		}
 	}
 
@@ -991,9 +1041,9 @@ export default function AdminMenuPage() {
 					</div>
 				</header>
 
-				{loadError && (
+				{(loadError || categoriesLoadError) && (
 					<p className="rounded border border-danger/40 bg-danger-soft p-3 text-sm text-danger" role="alert">
-						Unable to load products.
+						Unable to load menu data.
 					</p>
 				)}
 
@@ -1009,9 +1059,9 @@ export default function AdminMenuPage() {
 					</p>
 				)}
 
-				{refreshing && (
+				{(refreshing || refreshingCategories) && (
 					<p className="rounded border border-border bg-control p-3 text-sm text-text-secondary" role="status">
-						Syncing latest products...
+						Syncing latest menu data...
 					</p>
 				)}
 
@@ -1023,8 +1073,12 @@ export default function AdminMenuPage() {
 							categories={orderedCategories}
 							orderingCategory={orderingCategory}
 							renamingCategory={renamingCategory}
+							deletingCategory={deletingCategory}
+							creatingCategory={creatingCategory}
 							onMoveCategory={handleMoveCategory}
 							onRenameCategory={handleRenameCategory}
+							onCreateCategory={handleCreateCategory}
+							onDeleteCategory={handleDeleteCategory}
 						/>
 
 						<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,380px)_1fr]">

@@ -6,7 +6,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 
-const Categories = ({ categories, activeCategory, setActiveCategory }) => {
+const Categories = ({ categories, categoryLabels, activeCategory, setActiveCategory }) => {
   const categoriesRef = useRef(null);
 
   const categoryClassNames = (category) =>
@@ -56,7 +56,7 @@ const Categories = ({ categories, activeCategory, setActiveCategory }) => {
           aria-pressed={activeCategory === category}
           className={categoryClassNames(category)}
         >
-          {category}
+          {categoryLabels?.get(category) || category}
         </button>
       ))}
       </div>

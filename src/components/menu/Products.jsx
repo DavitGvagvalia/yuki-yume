@@ -3,12 +3,13 @@ import { PlusIcon } from "@heroicons/react/24/outline";
 
 import Detail from "../productDetails/Detail.jsx";
 import { useDetail } from "../../hooks/useDetail";
+import { useCategories } from "../../hooks/useCategories.jsx";
 import {
   getProductCategoryLabel,
   isProductVisible,
 } from "../../services/product.service.js";
 
-function ProductCard({ product, onOpenDetail, onChoose }) {
+function ProductCard({ product, categories, onOpenDetail, onChoose }) {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
 
   function handleKeyDown(e) {
@@ -37,7 +38,7 @@ function ProductCard({ product, onOpenDetail, onChoose }) {
       <div className="flex flex-1 flex-col justify-between gap-4 p-4">
         <div className="flex flex-col gap-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {getProductCategoryLabel(product)}
+            {getProductCategoryLabel(product, categories)}
           </p>
 
           <h4 className="line-clamp-2 text-lg font-bold text-text">
@@ -79,6 +80,7 @@ const Products = ({ products = [], onChoose }) => {
   } = useDetail();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const { categories } = useCategories();
 
   const visibleProducts = products.filter(isProductVisible);
 
@@ -105,6 +107,7 @@ const Products = ({ products = [], onChoose }) => {
           <ProductCard
             key={product.id}
             product={product}
+            categories={categories}
             onOpenDetail={() => handleOpenDetail(product)}
             onChoose={() => handleChoose(product)}
           />
@@ -114,6 +117,7 @@ const Products = ({ products = [], onChoose }) => {
       {isDetailOpen && selectedProduct && (
         <Detail
           item={selectedProduct}
+          categories={categories}
           closeDetail={handleCloseDetail}
         />
       )}

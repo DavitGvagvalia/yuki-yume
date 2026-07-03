@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
+    "migrate:categories": "node scripts/migrate-categories.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

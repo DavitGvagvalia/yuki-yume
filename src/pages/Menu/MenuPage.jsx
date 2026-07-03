@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import Categories from "../../components/menu/Categories.jsx";
 import Products from "../../components/menu/Products.jsx";
 import { useProducts } from "../../hooks/useProducts.jsx";
+import { useCategories } from "../../hooks/useCategories.jsx";
 import { useSelection } from "../../hooks/useSelection.jsx";
 import {
-  getOrderedCategories,
   getProductsMatchingCategory
 } from "../../services/product.service.js";
 
@@ -22,13 +22,21 @@ const SectionText = () => {
 
 export default function MenuPage() {
   const { visibleProducts } = useProducts()
+  const { categories: menuCategories } = useCategories()
   const { addProduct } = useSelection()
 
   const [activeCategory, setActiveCategory] = useState("POPULAR");
 
   const categories = useMemo(() => {
-    return ["POPULAR", ...getOrderedCategories(visibleProducts).map((category) => category.name)];
-  }, [visibleProducts]);
+    return ["POPULAR", ...menuCategories.map((category) => category.id)];
+  }, [menuCategories]);
+
+  const categoryLabels = useMemo(() => {
+    return new Map([
+      ['POPULAR', 'POPULAR'],
+      ...menuCategories.map((category) => [category.id, category.name])
+    ]);
+  }, [menuCategories]);
 
   const filteredProducts = useMemo(() => {
     return getProductsMatchingCategory(visibleProducts, activeCategory);
@@ -41,6 +49,7 @@ export default function MenuPage() {
       <div className="relative z-1 mx-auto w-full">
         <Categories
           categories={categories}
+          categoryLabels={categoryLabels}
           activeCategory={activeCategory}
           setActiveCategory={setActiveCategory}
         />

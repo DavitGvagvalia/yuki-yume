@@ -30,7 +30,7 @@ const DetailHeader = ({ product, closeDetail }) => {
 
 
 
-const DetailBody = ({ product }) => {
+const DetailBody = ({ product, categories }) => {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const detailMetadata = getProductDetailMetadata(product);
 
@@ -43,7 +43,7 @@ const DetailBody = ({ product }) => {
           {product.spicy && <span className='text-danger'>🔥</span>}
           {product.vegetarian && <span className='text-success'>🌱</span>}
         </h3>
-        <p className='text-sm text-muted'>{getProductCategoryLabel(product)}</p>
+        <p className='text-sm text-muted'>{getProductCategoryLabel(product, categories)}</p>
       </div>
       {ingredients.length > 0 && (
         <div className="flex flex-wrap gap-1 text-sm text-text-secondary">
@@ -86,7 +86,7 @@ const DetailFooter = ({ product }) => {
   )
 }
 
-const Detail = ({ item, closeDetail }) => {
+const Detail = ({ item, categories = [], closeDetail }) => {
   return (
     <div
       className="fixed
@@ -106,7 +106,7 @@ const Detail = ({ item, closeDetail }) => {
         z-[110]"
     >
       <DetailHeader product={item} closeDetail={closeDetail} />
-      <DetailBody product={item} />
+      <DetailBody product={item} categories={categories} />
       <DetailFooter product={item} />
     </div>
   );

@@ -184,7 +184,7 @@ export function createProductFormDefaults() {
 		return form;
 	}, {
 		image: '',
-		categories: []
+		categoryIds: []
 	});
 }
 
@@ -200,7 +200,7 @@ export function productToFormValues(product, getCategories) {
 	return {
 		...form,
 		image: product.image || '',
-		categories: getCategories(product)
+		categoryIds: getCategories(product)
 	};
 }
 
@@ -214,7 +214,7 @@ export function formValuesToProduct(form) {
 	return {
 		...product,
 		image: String(form.image || '').trim(),
-		categories: Array.isArray(form.categories) ? form.categories : []
+		categoryIds: Array.isArray(form.categoryIds) ? form.categoryIds : []
 	};
 }
 

@@ -38,10 +38,7 @@ export type Product = {
   image: string;
   name: string;
   price: number;
-  category: string;
-  categories: string[];
-  categoryOrder: number;
-  categoryOrders: Record<string, number>;
+  categoryIds: string[];
   sortOrder: number;
   popular: boolean;
   available: boolean;
@@ -58,10 +55,7 @@ export const productDefaults: Product = {
   image: "",
   name: "",
   price: 0,
-  category: "",
-  categories: [],
-  categoryOrder: 0,
-  categoryOrders: {},
+  categoryIds: [],
   sortOrder: 0,
   popular: false,
   available: true,
@@ -76,7 +70,7 @@ export const productDefaults: Product = {
 
 export const productRequiredFields: (keyof Product)[] = [
   "name",
-  "category"
+  "categoryIds"
 ];
 
 export function createProduct(data: Partial<Product> = {}): Product {
