@@ -108,7 +108,6 @@ export function createReview(data: Partial<Review> = {}): Review {
 
 export type Order = {
   id: string;
-  table: string;
   products: string[];
   date: string;
   totalPrice: number;
@@ -117,7 +116,6 @@ export type Order = {
 
 export const orderDefaults: Order = {
   id: "",
-  table: "",
   products: [],
   date: "",
   totalPrice: 0,
@@ -126,7 +124,6 @@ export const orderDefaults: Order = {
 
 export const orderRequiredFields: (keyof Order)[] = [
   "id",
-  "table",
   "products",
   "date",
   "totalPrice",

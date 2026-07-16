@@ -1,15 +1,14 @@
-import { createContext, use, useContext, useState } from "react";
+import { createContext, useCallback, useState } from "react";
 import { createCustomContext } from "../utils/createContext";
-import { useLocation } from "react-router";
 const CheckoutContext = createContext(null);
 
 const CheckoutProvider = ({ children }) => {
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
   
   //Checkout controls
-  const toggleCheckout = () => setCheckoutOpen((prev) => !prev);
-  const openCheckout = () => setCheckoutOpen(true);
-  const closeCheckout = () => setCheckoutOpen(false);
+  const toggleCheckout = useCallback(() => setCheckoutOpen((prev) => !prev), []);
+  const openCheckout = useCallback(() => setCheckoutOpen(true), []);
+  const closeCheckout = useCallback(() => setCheckoutOpen(false), []);
 
 
   return (

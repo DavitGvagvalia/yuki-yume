@@ -5,11 +5,13 @@ import AdminMenuPage from './pages/admin_dashboard/AdminMenuPage.jsx'
 import AdminLogin from './pages/admin_dashboard/AdminLogin.jsx'
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute.jsx'
 import OrderSuccess from './pages/Order/OrderSuccess.jsx'
+import CheckoutPage from './pages/Checkout/CheckoutPage.jsx'
 function routes() {
   return (
         <Routes>
-            <Route path="/*" element={<MenuPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order/success" element={<OrderSuccess />} />
+            <Route path="/*" element={<MenuPage />} />
 
 
             <Route path="/admin/login" element={<AdminLogin />} />

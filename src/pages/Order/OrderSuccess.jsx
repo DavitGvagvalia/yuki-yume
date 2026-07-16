@@ -2,7 +2,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
   ReceiptPercentIcon,
-  TableCellsIcon,
+  ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import { Link, useLocation } from "react-router-dom";
 
@@ -10,8 +10,9 @@ const OrderSuccess = () => {
   const waitTime = 10;
   const { state } = useLocation();
   const order = state?.order;
-  const table = order?.table;
-  const tableLabel = table ? `Table ${table}` : "Table unavailable";
+  const orderItemsCount = Array.isArray(order?.products)
+    ? order.products.reduce((sum, product) => sum + (Number(product.quantity) || 0), 0)
+    : 0;
 
   return (
     <main className="min-h-screen [background-image:var(--background-image-menu)] bg-cover bg-center px-4 py-16 text-text">
@@ -29,9 +30,8 @@ const OrderSuccess = () => {
               Thank you for your order
             </h1>
             <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-text-secondary md:text-base">
-              The kitchen received your order
-              {table ? ` from table ${table}` : ""} and is preparing it now.
-              Please stay nearby so we can serve it fresh.
+              The kitchen received your order and is preparing it now. Please
+              stay nearby so we can serve it fresh.
             </p>
           </div>
 
@@ -53,10 +53,10 @@ const OrderSuccess = () => {
             </div>
 
             <div className="rounded-md border border-border bg-control p-4">
-              <TableCellsIcon className="mb-3 h-7 w-7 text-accent" />
-              <p className="text-sm text-muted">Ordered from</p>
+              <ShoppingBagIcon className="mb-3 h-7 w-7 text-accent" />
+              <p className="text-sm text-muted">Items</p>
               <p className="mt-1 text-lg font-semibold text-text">
-                {tableLabel}
+                {orderItemsCount || "Confirmed"}
               </p>
             </div>
           </div>
@@ -79,13 +79,13 @@ const OrderSuccess = () => {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                to={`/menu/${table}`}
+                to="/menu"
                 className="engage inline-flex flex-1 items-center justify-center rounded-3xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-hover"
               >
                 Back to menu
               </Link>
               <Link
-                to={`/${table}`}
+                to="/"
                 className="inline-flex flex-1 items-center justify-center rounded-3xl border border-border bg-control px-5 py-3 text-sm font-semibold text-text transition hover:border-accent hover:bg-control-hover"
               >
                 Go home
