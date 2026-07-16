@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeftIcon,
+  PhoneIcon,
   ReceiptPercentIcon,
   ShoppingBagIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import CheckoutDeliveryMap from './CheckoutDeliveryMap.jsx';
 import { useCheckout } from '../../hooks/useCheckout.jsx';
 import { useOrder } from '../../hooks/useOrders.jsx';
 import { useSelection } from '../../hooks/useSelection.jsx';
@@ -91,6 +94,53 @@ function EmptyCheckout() {
   );
 }
 
+function CheckoutCustomerInfo({
+  customerName,
+  customerPhone,
+  onCustomerNameChange,
+  onCustomerPhoneChange,
+}) {
+  return (
+    <section className="rounded-md border border-border bg-panel shadow-xl">
+      <div className="border-b border-border bg-panel-elevated px-5 py-4">
+        <h2 className="text-lg font-bold text-text">Contact information</h2>
+      </div>
+
+      <div className="grid gap-3 p-5 md:grid-cols-2">
+        <label className="grid gap-2 text-sm font-semibold text-text-secondary">
+          Name
+          <div className="flex items-center gap-3 rounded-md border border-border bg-control px-4 py-3">
+            <UserIcon className="h-5 w-5 flex-shrink-0 text-accent" />
+            <input
+              type="text"
+              value={customerName}
+              onChange={(event) => onCustomerNameChange(event.target.value)}
+              placeholder="Your name"
+              autoComplete="name"
+              className="min-w-0 flex-1 bg-transparent text-sm text-text outline-none"
+            />
+          </div>
+        </label>
+
+        <label className="grid gap-2 text-sm font-semibold text-text-secondary">
+          Phone
+          <div className="flex items-center gap-3 rounded-md border border-border bg-control px-4 py-3">
+            <PhoneIcon className="h-5 w-5 flex-shrink-0 text-accent" />
+            <input
+              type="tel"
+              value={customerPhone}
+              onChange={(event) => onCustomerPhoneChange(event.target.value)}
+              placeholder="+995 ..."
+              autoComplete="tel"
+              className="min-w-0 flex-1 bg-transparent text-sm text-text outline-none"
+            />
+          </div>
+        </label>
+      </div>
+    </section>
+  );
+}
+
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { openCheckout, closeCheckout } = useCheckout();
@@ -102,6 +152,9 @@ export default function CheckoutPage() {
   } = useSelection();
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [deliveryLocation, setDeliveryLocation] = useState(null);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
 
   useEffect(() => {
     openCheckout();
@@ -121,14 +174,31 @@ export default function CheckoutPage() {
     return <EmptyCheckout />;
   }
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  async function handleSubmit() {
     setError('');
+
+    const trimmedCustomerName = customerName.trim();
+    const trimmedCustomerPhone = customerPhone.trim();
+    const deliveryAddress = deliveryLocation?.address?.trim();
+
+    if (!trimmedCustomerName || !trimmedCustomerPhone) {
+      setError('Enter your name and phone number before placing your order.');
+      return;
+    }
+
+    if (!deliveryAddress) {
+      setError('Choose a delivery address before placing your order.');
+      return;
+    }
+
     setSubmitting(true);
 
     const order = {
       id: crypto.randomUUID(),
+      customerName: trimmedCustomerName,
+      customerPhone: trimmedCustomerPhone,
       products: orderProducts,
+      deliveryAddress,
       date: new Date().toISOString(),
       totalPrice: Number(totalPrice),
       status: 'pending',
@@ -155,31 +225,44 @@ export default function CheckoutPage() {
 
   return (
     <main className="fixed inset-0 z-50 overflow-y-auto bg-background px-4 py-24 text-text">
-      <form
-        onSubmit={handleSubmit}
+      <div
         className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_340px]"
       >
-        <section className="rounded-md border border-border bg-panel shadow-xl">
-          <header className="flex items-center justify-between gap-4 border-b border-border bg-panel-elevated px-5 py-4">
-            <Link
-              to="/menu"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary transition hover:text-text"
-            >
-              <ArrowLeftIcon className="h-5 w-5" />
-              Back
-            </Link>
+        <div className="grid gap-6">
+          <section className="rounded-md border border-border bg-panel shadow-xl">
+            <header className="flex items-center justify-between gap-4 border-b border-border bg-panel-elevated px-5 py-4">
+              <Link
+                to="/menu"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-text-secondary transition hover:text-text"
+              >
+                <ArrowLeftIcon className="h-5 w-5" />
+                Back
+              </Link>
 
-            <h1 className="text-lg font-bold text-text md:text-2xl">
-              Checkout
-            </h1>
-          </header>
+              <h1 className="text-lg font-bold text-text md:text-2xl">
+                Checkout
+              </h1>
+            </header>
 
-          <div className="px-5 py-2">
-            {selectedProducts.map((item) => (
-              <CheckoutItem key={item.id} item={item} />
-            ))}
-          </div>
-        </section>
+            <div className="px-5 py-2">
+              {selectedProducts.map((item) => (
+                <CheckoutItem key={item.id} item={item} />
+              ))}
+            </div>
+          </section>
+
+          <CheckoutCustomerInfo
+            customerName={customerName}
+            customerPhone={customerPhone}
+            onCustomerNameChange={setCustomerName}
+            onCustomerPhoneChange={setCustomerPhone}
+          />
+
+          <CheckoutDeliveryMap
+            deliveryLocation={deliveryLocation}
+            onDeliveryLocationChange={setDeliveryLocation}
+          />
+        </div>
 
         <aside className="rounded-md border border-border bg-panel p-5 shadow-xl lg:sticky lg:top-24 lg:self-start">
           <h2 className="mb-4 text-xl font-bold">Order summary</h2>
@@ -211,14 +294,20 @@ export default function CheckoutPage() {
           )}
 
           <button
-            type="submit"
-            disabled={isSubmitting}
+            type="button"
+            disabled={
+              isSubmitting ||
+              !deliveryLocation?.address?.trim() ||
+              !customerName.trim() ||
+              !customerPhone.trim()
+            }
+            onClick={handleSubmit}
             className="mt-5 flex w-full items-center justify-center rounded-3xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103 disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted"
           >
             {isSubmitting ? 'Placing order...' : 'Place order'}
           </button>
         </aside>
-      </form>
+      </div>
     </main>
   );
 }

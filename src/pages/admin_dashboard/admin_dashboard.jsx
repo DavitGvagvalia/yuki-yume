@@ -67,6 +67,28 @@ function formatOrderDate(order) {
 	});
 }
 
+function formatDeliveryAddress(order) {
+	const deliveryAddress = String(order.deliveryAddress || '').trim();
+
+	if (!deliveryAddress) {
+		return 'No delivery address';
+	}
+
+	return deliveryAddress;
+}
+
+function formatCustomerName(order) {
+	const customerName = String(order.customerName || '').trim();
+
+	return customerName || 'No customer name';
+}
+
+function formatCustomerPhone(order) {
+	const customerPhone = String(order.customerPhone || '').trim();
+
+	return customerPhone || 'No customer phone';
+}
+
 const OrderButtons = ({ order }) => {
 	const { changeStatus } = useOrder();
 
@@ -126,12 +148,24 @@ const OrderCard = ({ order }) => {
 				{formatOrderDate(order)}
 			</p>
 
+			<p className="text-sm text-text-secondary">
+				Customer: {formatCustomerName(order)}
+			</p>
+
+			<p className="text-sm text-text-secondary">
+				Phone: {formatCustomerPhone(order)}
+			</p>
+
                 {order.products.map(product => {
                     return <p key={product.id}>{product.name} x{product.quantity}</p>
                 })}
 
 			<p className="text-sm">
 				Total: ${order.totalPrice}
+			</p>
+
+			<p className="text-sm text-text-secondary">
+				Delivery: {formatDeliveryAddress(order)}
 			</p>
 
 			<p className="text-sm capitalize">

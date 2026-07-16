@@ -1,10 +1,35 @@
 import {
   CheckCircleIcon,
   ClockIcon,
+  MapPinIcon,
+  PhoneIcon,
   ReceiptPercentIcon,
   ShoppingBagIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
 import { Link, useLocation } from "react-router-dom";
+
+function formatDeliveryAddress(order) {
+  const deliveryAddress = String(order?.deliveryAddress || '').trim();
+
+  if (!deliveryAddress) {
+    return "No delivery address";
+  }
+
+  return deliveryAddress;
+}
+
+function formatCustomerName(order) {
+  const customerName = String(order?.customerName || '').trim();
+
+  return customerName || "No customer name";
+}
+
+function formatCustomerPhone(order) {
+  const customerPhone = String(order?.customerPhone || '').trim();
+
+  return customerPhone || "No customer phone";
+}
 
 const OrderSuccess = () => {
   const waitTime = 10;
@@ -62,6 +87,42 @@ const OrderSuccess = () => {
           </div>
 
           <div className="border-t border-border px-6 py-6 md:px-10">
+            <div className="mb-4 rounded-md border border-border bg-control p-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex items-start gap-3">
+                  <UserIcon className="mt-0.5 h-6 w-6 flex-shrink-0 text-accent" />
+                  <div>
+                    <p className="text-sm text-muted">Customer</p>
+                    <p className="mt-1 text-sm font-semibold text-text">
+                      {formatCustomerName(order)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <PhoneIcon className="mt-0.5 h-6 w-6 flex-shrink-0 text-accent" />
+                  <div>
+                    <p className="text-sm text-muted">Phone</p>
+                    <p className="mt-1 text-sm font-semibold text-text">
+                      {formatCustomerPhone(order)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-md border border-border bg-control p-4">
+              <div className="flex items-start gap-3">
+                <MapPinIcon className="mt-0.5 h-6 w-6 flex-shrink-0 text-accent" />
+                <div>
+                  <p className="text-sm text-muted">Delivery location</p>
+                  <p className="mt-1 text-sm font-semibold text-text">
+                    {formatDeliveryAddress(order)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="mb-6 grid gap-3 text-sm text-text-secondary md:grid-cols-3">
               <div className="flex items-center gap-3">
                 <span className="h-2.5 w-2.5 rounded-full bg-accent" />

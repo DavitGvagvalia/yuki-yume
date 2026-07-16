@@ -108,7 +108,10 @@ export function createReview(data: Partial<Review> = {}): Review {
 
 export type Order = {
   id: string;
+  customerName?: string;
+  customerPhone?: string;
   products: string[];
+  deliveryAddress?: string;
   date: string;
   totalPrice: number;
   status: string;
@@ -116,7 +119,10 @@ export type Order = {
 
 export const orderDefaults: Order = {
   id: "",
+  customerName: "",
+  customerPhone: "",
   products: [],
+  deliveryAddress: "",
   date: "",
   totalPrice: 0,
   status: "",
