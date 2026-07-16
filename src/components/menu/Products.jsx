@@ -25,7 +25,7 @@ function ProductCard({ product, categories, onOpenDetail, onChoose }) {
       tabIndex={0}
       onClick={onOpenDetail}
       onKeyDown={handleKeyDown}
-      className="flex h-80 cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover md:h-[25rem]"
+      className="flex h-90 cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover md:h-[25rem]"
     >
       <div className="aspect-2/1 w-full overflow-hidden">
         <img
