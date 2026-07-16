@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useMemo } from "react";
 import { createCustomContext } from "../utils/createContext";
+import { getProductDiscountedPrice } from "../services/product.service";
 const selectionContext = createContext(null);
 
 const SelectionProvider = ({ children }) => {
@@ -83,7 +84,7 @@ const [selectedProducts, setSelectedProducts] = useState(
 
   const totalPrice = useMemo(() => {
     let total = selectedProducts.reduce(
-      (sum, p) => sum + p.price * p.quantity,
+      (sum, p) => sum + getProductDiscountedPrice(p) * p.quantity,
       0
     );
     return total.toFixed(2)

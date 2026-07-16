@@ -38,6 +38,7 @@ export type Product = {
   image: string;
   name: string;
   price: number;
+  promotion: number;
   categoryIds: string[];
   sortOrder: number;
   popular: boolean;
@@ -55,6 +56,7 @@ export const productDefaults: Product = {
   image: "",
   name: "",
   price: 0,
+  promotion: 0,
   categoryIds: [],
   sortOrder: 0,
   popular: false,

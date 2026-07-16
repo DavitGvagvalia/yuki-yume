@@ -5,6 +5,7 @@ import addProduct, {
 	deleteProduct,
 	getProductCategoryLabel,
 	getProductCategoryIds,
+	getProductPriceInfo,
 	getProductsMatchingCategory,
 	getProductSearchValues,
 	sortProductsByCategoryOrder,
@@ -43,7 +44,7 @@ const POPULAR_CATEGORY = 'POPULAR';
 const PRODUCT_FORM_FIELD_GROUPS = [
 	{
 		title: 'Basic details',
-		fields: ['name', 'price', 'preparationTime', 'sortOrder', 'ingredients']
+		fields: ['name', 'price', 'promotion', 'preparationTime', 'sortOrder', 'ingredients']
 	},
 	{
 		title: 'Portion and nutrition',
@@ -208,6 +209,7 @@ function ProductList({
 					products.map((product) => {
 						const orderIndex = categoryOrderProductIds.indexOf(product.id);
 						const canDragProduct = canReorder && orderIndex !== -1 && !isOrdering;
+						const priceInfo = getProductPriceInfo(product);
 
 						return (
 							<div
@@ -257,7 +259,16 @@ function ProductList({
 								<span className="min-w-0 flex-1">
 									<span className="block truncate font-semibold">{product.name}</span>
 									<span className="block text-sm text-text-secondary">
-										{getProductCategoryLabel(product, categories) || 'No category'} · {product.price}₾
+										{getProductCategoryLabel(product, categories) || 'No category'} ·{' '}
+										{priceInfo.hasPromotion ? (
+											<>
+												{priceInfo.currentPriceLabel}₾{' '}
+												<span className="line-through">{priceInfo.basePriceLabel}₾</span>{' '}
+												<span className="text-success">-{priceInfo.promotion}%</span>
+											</>
+										) : (
+											<>{priceInfo.basePriceLabel}₾</>
+										)}
 										{product.popular && ' · popular'}
 										{Number.isFinite(Number(product.sortOrder)) && (
 											<> · #{Number(product.sortOrder)}</>

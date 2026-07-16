@@ -41,6 +41,52 @@ function normalizeSortOrder(value) {
   return Number.isFinite(sortOrder) ? sortOrder : Number.MAX_SAFE_INTEGER;
 }
 
+export function normalizePromotionPercent(value) {
+  const promotion = Number(value);
+
+  if (!Number.isFinite(promotion)) {
+    return 0;
+  }
+
+  return Math.min(Math.max(promotion, 0), 100);
+}
+
+function normalizePrice(value) {
+  const price = Number(value);
+
+  return Number.isFinite(price) ? price : 0;
+}
+
+function roundPrice(value) {
+  return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+export function getProductDiscountedPrice(product) {
+  const price = normalizePrice(product?.price);
+  const promotion = normalizePromotionPercent(product?.promotion);
+
+  if (promotion <= 0) {
+    return roundPrice(price);
+  }
+
+  return roundPrice(price * (1 - promotion / 100));
+}
+
+export function getProductPriceInfo(product) {
+  const basePrice = roundPrice(normalizePrice(product?.price));
+  const promotion = normalizePromotionPercent(product?.promotion);
+  const currentPrice = getProductDiscountedPrice(product);
+
+  return {
+    basePrice,
+    currentPrice,
+    promotion,
+    hasPromotion: promotion > 0 && currentPrice < basePrice,
+    basePriceLabel: basePrice.toFixed(2),
+    currentPriceLabel: currentPrice.toFixed(2)
+  };
+}
+
 function uniqueCategoryIds(values) {
   const categoryIds = [];
 

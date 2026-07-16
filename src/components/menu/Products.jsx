@@ -6,11 +6,13 @@ import { useDetail } from "../../hooks/useDetail";
 import { useCategories } from "../../hooks/useCategories.jsx";
 import {
   getProductCategoryLabel,
+  getProductPriceInfo,
   isProductVisible,
 } from "../../services/product.service.js";
 
 function ProductCard({ product, categories, onOpenDetail, onChoose }) {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
+  const priceInfo = getProductPriceInfo(product);
 
   function handleKeyDown(e) {
     if (e.key === "Enter" || e.key === " ") {
@@ -53,7 +55,17 @@ function ProductCard({ product, categories, onOpenDetail, onChoose }) {
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <p className="text-base font-bold text-text">{product.price}₾</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-base font-bold text-text">{priceInfo.currentPriceLabel}₾</p>
+            {priceInfo.hasPromotion && (
+              <>
+                <p className="text-sm text-muted line-through">{priceInfo.basePriceLabel}₾</p>
+                <span className="rounded bg-success-soft px-2 py-0.5 text-xs font-semibold text-success">
+                  -{priceInfo.promotion}%
+                </span>
+              </>
+            )}
+          </div>
 
           <button
             type="button"

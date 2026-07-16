@@ -1,5 +1,26 @@
 import { functions, db } from "../firebaseConfig.js";
 
+function normalizePromotionPercent(value) {
+  const promotion = Number(value);
+
+  if (!Number.isFinite(promotion)) {
+    return 0;
+  }
+
+  return Math.min(Math.max(promotion, 0), 100);
+}
+
+function getDiscountedPrice(product) {
+  const price = Number(product?.price);
+  const basePrice = Number.isFinite(price) ? price : 0;
+  const promotion = normalizePromotionPercent(product?.promotion);
+  const discountedPrice = promotion > 0
+    ? basePrice * (1 - promotion / 100)
+    : basePrice;
+
+  return Math.round((discountedPrice + Number.EPSILON) * 100) / 100;
+}
+
 export const checkoutCheck = functions.https.onRequest(async (req, res) => {
   try {
     if (req.method !== "POST") {
@@ -51,13 +72,16 @@ export const checkoutCheck = functions.https.onRequest(async (req, res) => {
         });
       }
 
-      const itemTotal = dbItem.price * quantity;
+      const itemPrice = getDiscountedPrice(dbItem);
+      const itemTotal = itemPrice * quantity;
       total += itemTotal;
 
       orderItems.push({
         productId: id,
         name: dbItem.name,
-        price: dbItem.price,
+        price: itemPrice,
+        basePrice: dbItem.price,
+        promotion: normalizePromotionPercent(dbItem.promotion),
         quantity,
         total: itemTotal,
       });

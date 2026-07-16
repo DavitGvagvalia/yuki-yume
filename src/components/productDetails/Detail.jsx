@@ -1,7 +1,7 @@
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { useSelection } from '../../hooks/useSelection';
 import {Quantifier} from "../ui/quantifier";
-import { getProductCategoryLabel } from '../../services/product.service';
+import { getProductCategoryLabel, getProductPriceInfo } from '../../services/product.service';
 import { getProductDetailMetadata } from '../../config/productFields';
 
 
@@ -33,6 +33,7 @@ const DetailHeader = ({ product, closeDetail }) => {
 const DetailBody = ({ product, categories }) => {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const detailMetadata = getProductDetailMetadata(product);
+  const priceInfo = getProductPriceInfo(product);
 
   return (
     <div className='flex flex-col gap-4 p-4'>
@@ -60,7 +61,17 @@ const DetailBody = ({ product, categories }) => {
           ))}
         </div>
       )}
-      <p className='text-lg font-semibold'>{product.price}₾</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className='text-lg font-semibold'>{priceInfo.currentPriceLabel}₾</p>
+        {priceInfo.hasPromotion && (
+          <>
+            <p className="text-sm text-muted line-through">{priceInfo.basePriceLabel}₾</p>
+            <span className="rounded bg-success-soft px-2 py-0.5 text-xs font-semibold text-success">
+              -{priceInfo.promotion}%
+            </span>
+          </>
+        )}
+      </div>
     </div>
   )
 }

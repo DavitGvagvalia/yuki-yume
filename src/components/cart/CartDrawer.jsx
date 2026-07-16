@@ -7,6 +7,7 @@ import { Link } from "react-router";
 import { useOrder } from "../../hooks/useOrders.jsx";
 import { useLocation, useNavigate } from 'react-router'
 import {useState, useEffect} from "react";
+import { getProductDiscountedPrice } from "../../services/product.service.js";
 
 const CartItems = ({ items }) => {
   return (
@@ -64,7 +65,11 @@ const CartFooter = ({ totalPrice,selectedProducts,toggleCart,clearSelection }) =
   useEffect(() => {
     setUser((currentUser) => ({
       ...currentUser,
-      products: selectedProducts,
+      products: selectedProducts.map((product) => ({
+        ...product,
+        price: getProductDiscountedPrice(product),
+        basePrice: Number(product.price) || 0,
+      })),
       totalPrice: Number(totalPrice),
     }))
   }, [selectedProducts, totalPrice])

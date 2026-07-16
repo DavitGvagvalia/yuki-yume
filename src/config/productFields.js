@@ -12,6 +12,12 @@ function parseNumber(value) {
 	return Number.isFinite(number) ? number : 0;
 }
 
+function parsePercentage(value) {
+	const number = parseNumber(value);
+
+	return Math.min(Math.max(number, 0), 100);
+}
+
 function formatNumber(value) {
 	const number = Number(value);
 
@@ -54,6 +60,17 @@ export const productFieldDefinitions = [
 		search: true,
 		inputProps: { min: '0', step: '0.01' },
 		parse: parseNumber,
+		format: formatNumber
+	},
+	{
+		key: 'promotion',
+		label: 'Promotion (%)',
+		type: PRODUCT_FIELD_TYPES.number,
+		defaultValue: 0,
+		admin: true,
+		search: true,
+		inputProps: { min: '0', max: '100', step: '1' },
+		parse: parsePercentage,
 		format: formatNumber
 	},
 	{
