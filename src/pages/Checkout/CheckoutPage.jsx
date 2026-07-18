@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeftIcon,
+  MapPinIcon,
   PhoneIcon,
   ReceiptPercentIcon,
   ShoppingBagIcon,
+  TruckIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
@@ -16,6 +18,10 @@ import {
   getProductPriceInfo,
   normalizePromotionPercent,
 } from '../../services/product.service.js';
+import {
+  calculateDeliveryPricing,
+  formatGel,
+} from '../../utils/deliveryFee.js';
 
 function buildOrderProduct(product) {
   const priceInfo = getProductPriceInfo(product);
@@ -169,6 +175,10 @@ export default function CheckoutPage() {
   const totalItems = useMemo(() => (
     orderProducts.reduce((sum, product) => sum + product.quantity, 0)
   ), [orderProducts]);
+  const orderSubtotal = Number(totalPrice);
+  const deliveryPricing = useMemo(() => (
+    calculateDeliveryPricing(deliveryLocation?.coordinates, orderSubtotal)
+  ), [deliveryLocation, orderSubtotal]);
 
   if (selectedProducts.length === 0) {
     return <EmptyCheckout />;
@@ -191,6 +201,16 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!deliveryLocation?.coordinates) {
+      setError('Choose a delivery pin before placing your order.');
+      return;
+    }
+
+    if (!deliveryPricing.inRange) {
+      setError(deliveryPricing.error || 'Choose a valid delivery location before placing your order.');
+      return;
+    }
+
     setSubmitting(true);
 
     const order = {
@@ -199,8 +219,11 @@ export default function CheckoutPage() {
       customerPhone: trimmedCustomerPhone,
       products: orderProducts,
       deliveryAddress,
+      distanceKm: deliveryPricing.distanceKm,
+      deliveryFee: deliveryPricing.deliveryFee,
+      finalTotal: deliveryPricing.finalTotal,
       date: new Date().toISOString(),
-      totalPrice: Number(totalPrice),
+      totalPrice: orderSubtotal,
       status: 'pending',
     };
 
@@ -224,7 +247,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="fixed inset-0 z-50 overflow-y-auto bg-background px-4 py-24 text-text">
+    <main className="fixed inset-0 z-50 overflow-y-auto bg-background px-4 py-10   text-text">
       <div
         className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1fr_340px]"
       >
@@ -279,13 +302,39 @@ export default function CheckoutPage() {
             <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-control p-3">
               <span className="flex items-center gap-2 text-text-secondary">
                 <ReceiptPercentIcon className="h-5 w-5 text-accent" />
-                Total
+                Food subtotal
               </span>
               <span className="text-lg font-bold text-text">
-                {totalPrice} GEL
+                {formatGel(orderSubtotal)}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-control p-3">
+              
+              <span className="text-text-secondary flex gap-2 items-center">
+                <TruckIcon className="h-5 w-5 text-accent"/>Delivery</span>
+              <span className="font-semibold text-text">
+                {deliveryPricing.deliveryFee === null
+                  ? 'Unavailable'
+                  : formatGel(deliveryPricing.deliveryFee)}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 rounded-md border border-accent/40 bg-accent-soft p-3">
+              <span className="font-semibold text-text">Final total</span>
+              <span className="text-lg font-bold text-text">
+                {deliveryPricing.finalTotal === null
+                  ? formatGel(orderSubtotal)
+                  : formatGel(deliveryPricing.finalTotal)}
               </span>
             </div>
           </div>
+
+          {deliveryPricing.error && deliveryLocation?.coordinates && (
+            <p className="mt-4 rounded-md border border-danger/40 bg-danger-soft p-3 text-sm text-danger">
+              {deliveryPricing.error}
+            </p>
+          )}
 
           {error && (
             <p className="mt-4 rounded-md border border-danger/40 bg-danger-soft p-3 text-sm text-danger">
@@ -295,12 +344,7 @@ export default function CheckoutPage() {
 
           <button
             type="button"
-            disabled={
-              isSubmitting ||
-              !deliveryLocation?.address?.trim() ||
-              !customerName.trim() ||
-              !customerPhone.trim()
-            }
+            disabled={isSubmitting}
             onClick={handleSubmit}
             className="mt-5 flex w-full items-center justify-center rounded-3xl bg-accent px-5 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-hover active:scale-103 disabled:cursor-not-allowed disabled:bg-disabled disabled:text-muted"
           >

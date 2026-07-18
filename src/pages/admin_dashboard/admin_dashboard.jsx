@@ -77,6 +77,26 @@ function formatDeliveryAddress(order) {
 	return deliveryAddress;
 }
 
+function formatMoney(value) {
+	const number = Number(value);
+
+	if (!Number.isFinite(number)) {
+		return 'Unavailable';
+	}
+
+	return `${number.toFixed(2)} GEL`;
+}
+
+function formatDistance(order) {
+	const distanceKm = Number(order.distanceKm);
+
+	if (!Number.isFinite(distanceKm)) {
+		return 'No distance';
+	}
+
+	return `${distanceKm.toFixed(1)} km`;
+}
+
 function formatCustomerName(order) {
 	const customerName = String(order.customerName || '').trim();
 
@@ -161,11 +181,23 @@ const OrderCard = ({ order }) => {
                 })}
 
 			<p className="text-sm">
-				Total: ${order.totalPrice}
+				Food total: {formatMoney(order.totalPrice)}
 			</p>
 
 			<p className="text-sm text-text-secondary">
 				Delivery: {formatDeliveryAddress(order)}
+			</p>
+
+			<p className="text-sm text-text-secondary">
+				Distance: {formatDistance(order)}
+			</p>
+
+			<p className="text-sm text-text-secondary">
+				Delivery fee: {formatMoney(order.deliveryFee)}
+			</p>
+
+			<p className="text-sm font-semibold text-text">
+				Final total: {formatMoney(order.finalTotal ?? order.totalPrice)}
 			</p>
 
 			<p className="text-sm capitalize">

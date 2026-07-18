@@ -112,6 +112,9 @@ export type Order = {
   customerPhone?: string;
   products: string[];
   deliveryAddress?: string;
+  distanceKm?: number | null;
+  deliveryFee?: number | null;
+  finalTotal?: number | null;
   date: string;
   totalPrice: number;
   status: string;
@@ -123,6 +126,9 @@ export const orderDefaults: Order = {
   customerPhone: "",
   products: [],
   deliveryAddress: "",
+  distanceKm: null,
+  deliveryFee: null,
+  finalTotal: null,
   date: "",
   totalPrice: 0,
   status: "",

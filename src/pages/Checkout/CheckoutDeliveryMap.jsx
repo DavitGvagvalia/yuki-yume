@@ -10,12 +10,12 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import logo from '../../assets/images/logo.png';
+import {
+  MAX_DELIVERY_DISTANCE_KM,
+  RESTAURANT_LOCATION,
+} from '../../utils/deliveryFee.js';
 
-const RESTAURANT_LOCATION = {
-  lat: 41.70400903072833,
-  lng: 44.80448381630125,
-};
-const DELIVERY_RADIUS_METERS = 5000;
+const DELIVERY_RADIUS_METERS = MAX_DELIVERY_DISTANCE_KM * 1000;
 const TBILISI_VIEWBOX = {
   west: 44.596,
   south: 41.58,

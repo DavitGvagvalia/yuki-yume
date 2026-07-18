@@ -19,6 +19,16 @@ function formatDeliveryAddress(order) {
   return deliveryAddress;
 }
 
+function formatMoney(value) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    return "Unavailable";
+  }
+
+  return `${number.toFixed(2)} GEL`;
+}
+
 function formatCustomerName(order) {
   const customerName = String(order?.customerName || '').trim();
 
@@ -38,6 +48,7 @@ const OrderSuccess = () => {
   const orderItemsCount = Array.isArray(order?.products)
     ? order.products.reduce((sum, product) => sum + (Number(product.quantity) || 0), 0)
     : 0;
+  const finalTotal = order?.finalTotal ?? order?.totalPrice;
 
   return (
     <main className="min-h-screen [background-image:var(--background-image-menu)] bg-cover bg-center px-4 py-16 text-text">
@@ -118,6 +129,24 @@ const OrderSuccess = () => {
                   <p className="text-sm text-muted">Delivery location</p>
                   <p className="mt-1 text-sm font-semibold text-text">
                     {formatDeliveryAddress(order)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6 rounded-md border border-border bg-control p-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <p className="text-sm text-muted">Delivery fee</p>
+                  <p className="mt-1 text-sm font-semibold text-text">
+                    {formatMoney(order?.deliveryFee)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted">Final total</p>
+                  <p className="mt-1 text-sm font-semibold text-text">
+                    {formatMoney(finalTotal)}
                   </p>
                 </div>
               </div>
