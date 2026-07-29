@@ -35,6 +35,13 @@ function buildOrderProduct(product) {
   };
 }
 
+function isValidGeorgianPhoneNumber(phoneNumber) {
+  const normalizedPhoneNumber = String(phoneNumber)
+    .replace(/[\s()-]/g, '');
+
+  return /^(?:\+?995)?5\d{8}$/.test(normalizedPhoneNumber);
+}
+
 function CheckoutItem({ item }) {
   const priceInfo = getProductPriceInfo(item);
   const quantity = Number(item.quantity) || 0;
@@ -138,6 +145,7 @@ function CheckoutCustomerInfo({
               onChange={(event) => onCustomerPhoneChange(event.target.value)}
               placeholder="+995 ..."
               autoComplete="tel"
+              inputMode="tel"
               className="min-w-0 flex-1 bg-transparent text-sm text-text outline-none"
             />
           </div>
@@ -193,6 +201,11 @@ export default function CheckoutPage() {
 
     if (!trimmedCustomerName || !trimmedCustomerPhone) {
       setError('Enter your name and phone number before placing your order.');
+      return;
+    }
+
+    if (!isValidGeorgianPhoneNumber(trimmedCustomerPhone)) {
+      setError('Enter a valid Georgian mobile number, for example +995 511 557 707.');
       return;
     }
 

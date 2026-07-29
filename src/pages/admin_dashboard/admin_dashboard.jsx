@@ -162,26 +162,22 @@ const OrderButtons = ({ order }) => {
 const OrderCard = ({ order }) => {
 	return (
 		<div className="flex min-w-[280px] flex-col gap-2 rounded border border-border bg-control p-3">
-			<h3 className="text-md font-bold">{order.name}</h3>
-
 			<p className="text-sm text-text-secondary">
 				{formatOrderDate(order)}
 			</p>
-
-			<p className="text-sm text-text-secondary">
-				Customer: {formatCustomerName(order)}
-			</p>
-
-			<p className="text-sm text-text-secondary">
-				Phone: {formatCustomerPhone(order)}
-			</p>
-
                 {order.products.map(product => {
-                    return <p key={product.id}>{product.name} x{product.quantity}</p>
+                    return <h1 className='text-2xl ' key={product.id}>{product.name} <span className=' bg-accent-muted p-1 rounded-xl text-white aspect-square'>X{product.quantity}</span></h1>
                 })}
 
+			<h3>Customer Information</h3>
+			<p className="text-sm text-text-secondary">
+				Name: {formatCustomerName(order)} | Phone: {formatCustomerPhone(order)}
+			</p>
+
+
+
 			<p className="text-sm">
-				Food total: {formatMoney(order.totalPrice)}
+				Food total: {formatMoney(order.totalPrice)} | Delivery fee: {formatMoney(order.deliveryFee)} | <span className='text-success font-semibold text-lg'>Final total: {formatMoney(order.finalTotal ?? order.totalPrice)}</span>
 			</p>
 
 			<p className="text-sm text-text-secondary">
@@ -193,15 +189,15 @@ const OrderCard = ({ order }) => {
 			</p>
 
 			<p className="text-sm text-text-secondary">
-				Delivery fee: {formatMoney(order.deliveryFee)}
+				
 			</p>
 
 			<p className="text-sm font-semibold text-text">
-				Final total: {formatMoney(order.finalTotal ?? order.totalPrice)}
+				
 			</p>
 
 			<p className="text-sm capitalize">
-				Status: {order.status}
+				Status: <span className='bg-accent-muted p-2 rounded-3xl text-white'>{order.status}</span>
 			</p>
 
 			<OrderButtons order={order} />

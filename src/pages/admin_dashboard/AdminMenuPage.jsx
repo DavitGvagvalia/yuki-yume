@@ -146,9 +146,8 @@ function ProductList({
 				<h2 className="text-xl font-bold">Products</h2>
 
 				<div className="flex flex-wrap justify-end gap-2">
-					<label className={`cursor-pointer rounded border border-border bg-control px-4 py-2 text-sm font-semibold transition hover:border-accent hover:bg-control-hover ${
-						importing ? 'pointer-events-none opacity-60' : ''
-					}`}>
+					<label className={`cursor-pointer rounded border border-border bg-control px-4 py-2 text-sm font-semibold transition hover:border-accent hover:bg-control-hover ${importing ? 'pointer-events-none opacity-60' : ''
+						}`}>
 						<input
 							type="file"
 							accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/webp,image/avif"
@@ -218,15 +217,13 @@ function ProductList({
 								tabIndex={0}
 								draggable={canDragProduct}
 								aria-grabbed={draggedProductId === product.id}
-								className={`flex items-center gap-3 rounded border p-3 text-left transition ${
-									dropTargetProductId === product.id
+								className={`flex items-center gap-3 rounded border p-3 text-left transition ${dropTargetProductId === product.id
 										? 'border-accent bg-accent-soft'
 										: selectedProductId === product.id
-										? 'border-accent bg-control'
-										: 'border-border bg-background/35 hover:border-accent hover:bg-control'
-								} ${canDragProduct ? 'cursor-grab active:cursor-grabbing' : ''} ${
-									draggedProductId === product.id ? 'opacity-60' : ''
-								}`}
+											? 'border-accent bg-control'
+											: 'border-border bg-background/35 hover:border-accent hover:bg-control'
+									} ${canDragProduct ? 'cursor-grab active:cursor-grabbing' : ''} ${draggedProductId === product.id ? 'opacity-60' : ''
+									}`}
 								onClick={() => onSelect(product)}
 								onKeyDown={(event) => {
 									if (event.key === 'Enter' || event.key === ' ') {
@@ -282,11 +279,10 @@ function ProductList({
 									</span>
 								)}
 
-								<span className={`rounded px-2 py-1 text-xs ${
-									product.available === false
+								<span className={`rounded px-2 py-1 text-xs ${product.available === false
 										? 'bg-danger-soft text-danger'
 										: 'bg-success-soft text-success'
-								}`}>
+									}`}>
 									{product.available === false ? 'Hidden' : 'Available'}
 								</span>
 							</div>
@@ -418,7 +414,7 @@ function CategoryOrderPanel({
 									{deletingCategory === category.id ? 'Deleting' : 'Delete'}
 								</button>
 							</form>
-							</div>
+						</div>
 					))}
 				</div>
 			)}
@@ -485,7 +481,7 @@ function ProductForm({
 	if (imageFile && form.name) {
 		try {
 			imageUploadPath = getProductImagePath(form.name, imageFile);
-		} catch {}
+		} catch { }
 	}
 
 	return (
@@ -915,7 +911,7 @@ export default function AdminMenuPage() {
 			setMessage('Product order updated.');
 			await refreshProductsQuietly();
 		} catch (orderError) {
-			await refreshProductsQuietly().catch(() => {});
+			await refreshProductsQuietly().catch(() => { });
 			setError(orderError.message || 'Unable to update product order.');
 		} finally {
 			setOrderingProductId(null);
@@ -949,7 +945,7 @@ export default function AdminMenuPage() {
 			setMessage('Category order updated.');
 			await refreshCategoriesQuietly();
 		} catch (orderError) {
-			await refreshCategoriesQuietly().catch(() => {});
+			await refreshCategoriesQuietly().catch(() => { });
 			setError(orderError.message || 'Unable to update category order.');
 		} finally {
 			setOrderingCategory(null);
@@ -993,7 +989,7 @@ export default function AdminMenuPage() {
 			setMessage('Category renamed.');
 			await refreshCategoriesQuietly();
 		} catch (renameError) {
-			await refreshCategoriesQuietly().catch(() => {});
+			await refreshCategoriesQuietly().catch(() => { });
 			setError(renameError.message || 'Unable to rename category.');
 		} finally {
 			setRenamingCategory(null);
