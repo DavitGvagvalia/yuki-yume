@@ -71,15 +71,15 @@ export function getDeliveryFeeForDistance(distanceKm) {
     return null;
   }
 
-  if (roundedDistanceKm <= 2) {
-    return 0;
+  if (roundedDistanceKm <= 1) {
+    return 1;
   }
 
-  if (roundedDistanceKm <= 4) {
-    return 5;
+  if (roundedDistanceKm <= 3) {
+    return 3;
   }
 
-  return 8;
+  return 5;
 }
 
 export function calculateDeliveryPricing(deliveryCoordinates, subtotal) {

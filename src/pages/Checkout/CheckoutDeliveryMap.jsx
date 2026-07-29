@@ -268,7 +268,7 @@ export default function CheckoutDeliveryMap({
             Selected location: {deliveryLocation?.address?.trim() || 'Choose a delivery pin'}
           </p>
           <p className="mt-1">
-            Delivery limit: 5 km from Tkviavi 18.
+            Delivery: 0-1 km 1 GEL, 1-3 km 3 GEL, 3-5 km 5 GEL from Tkviavi 18.
           </p>
         </div>
       </div>

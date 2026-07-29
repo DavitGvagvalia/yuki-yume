@@ -4,6 +4,7 @@ import Products from "../../components/menu/Products.jsx";
 import { useProducts } from "../../hooks/useProducts.jsx";
 import { useCategories } from "../../hooks/useCategories.jsx";
 import { useSelection } from "../../hooks/useSelection.jsx";
+import { useImagePreloader } from "../../hooks/useImagePreloader.jsx";
 import {
   getProductsMatchingCategory
 } from "../../services/product.service.js";
@@ -42,7 +43,19 @@ export default function MenuPage() {
     return getProductsMatchingCategory(visibleProducts, activeCategory);
   }, [visibleProducts, activeCategory]);
 
+  const priorityImageUrls = useMemo(() => {
+    return filteredProducts.map((product) => product.imageUrl);
+  }, [filteredProducts]);
 
+  const backgroundImageUrls = useMemo(() => {
+    return visibleProducts.map((product) => product.imageUrl);
+  }, [visibleProducts]);
+
+  useImagePreloader({
+    priorityUrls: priorityImageUrls,
+    backgroundUrls: backgroundImageUrls,
+    concurrency: 8
+  });
 
   return (
     <main className="relative min-h-screen overflow-hidden ">

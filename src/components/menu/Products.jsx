@@ -10,7 +10,7 @@ import {
   isProductVisible,
 } from "../../services/product.service.js";
 
-function ProductCard({ product, categories, onOpenDetail, onChoose }) {
+function ProductCard({ product, categories, imagePriority = false, onOpenDetail, onChoose }) {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const priceInfo = getProductPriceInfo(product);
 
@@ -33,6 +33,9 @@ function ProductCard({ product, categories, onOpenDetail, onChoose }) {
         <img
           src={product.imageUrl}
           alt={product.name}
+          loading={imagePriority ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={imagePriority ? "high" : "auto"}
           className="h-full w-full object-cover transition duration-300 hover:scale-105"
         />
       </div>
@@ -115,11 +118,12 @@ const Products = ({ products = [], onChoose }) => {
   return (
     <>
       <div className="grid grid-cols-1 gap-4 overflow-y-auto p-6 pt-45 md:grid-cols-3">
-        {visibleProducts.map((product) => (
+        {visibleProducts.map((product, index) => (
           <ProductCard
             key={product.id}
             product={product}
             categories={categories}
+            imagePriority={index < 6}
             onOpenDetail={() => handleOpenDetail(product)}
             onChoose={() => handleChoose(product)}
           />
