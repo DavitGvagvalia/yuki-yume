@@ -14,7 +14,6 @@ function routes() {
             <Route path="/order/success" element={<OrderSuccess />} />
             <Route path="/*" element={<MenuPage />} />
 
-            <Route path="UItest" element={<PageUITemplate />} />
 
 
             <Route path="/admin/login" element={<AdminLogin />} />
