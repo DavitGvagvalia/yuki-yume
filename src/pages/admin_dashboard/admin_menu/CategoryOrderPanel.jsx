@@ -10,6 +10,7 @@ const DRAG_TYPES = {
 function CategoryButton({
 	category,
 	index,
+	orderNumber,
 	selected,
 	productCount,
 	orderingCategory,
@@ -59,8 +60,12 @@ function CategoryButton({
 			} ${isOver ? 'ring-2 ring-accent/40' : ''} ${isDragging ? 'opacity-50' : ''}`}
 		>
 			<span className="flex min-w-0 items-center gap-2">
-				<span className={selected ? 'text-white/60' : 'text-slate-400'} aria-hidden="true">⋮⋮</span>
-				<span className="text-xs opacity-60">#{index + 1}</span>
+				{isRealCategory && (
+					<span className={selected ? 'text-white/60' : 'text-slate-400'} aria-hidden="true">⋮⋮</span>
+				)}
+				{isRealCategory && (
+					<span className="text-xs opacity-60">#{orderNumber}</span>
+				)}
 				<span className="truncate">{category.name}</span>
 			</span>
 			<span className="text-xs opacity-75">{productCount}</span>
@@ -109,6 +114,7 @@ function CategoryOrderPanel({
 							key={category.id}
 							category={category}
 							index={index}
+							orderNumber={categories.findIndex((item) => item.id === category.id) + 1}
 							selected={selectedCategory === category.id}
 							productCount={productCount}
 							orderingCategory={orderingCategory}
