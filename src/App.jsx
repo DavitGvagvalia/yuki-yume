@@ -4,7 +4,6 @@ import AppRoutes from "./routes.jsx";
 import PageWrapper from "./components/layout/PageWrapper.jsx";
 import Footer from "./components/layout/Footer.jsx";
 import { CartButton } from "./components/cart/CartButton.jsx";
-
 export default function App() {
 
 
