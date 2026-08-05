@@ -6,12 +6,15 @@ import AdminLogin from './pages/admin_dashboard/AdminLogin.jsx'
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute.jsx'
 import OrderSuccess from './pages/Order/OrderSuccess.jsx'
 import CheckoutPage from './pages/Checkout/CheckoutPage.jsx'
+import PageUITemplate from './pages/admin_dashboard/admin_menu/PageUITemplate.jsx'
 function routes() {
   return (
         <Routes>
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order/success" element={<OrderSuccess />} />
             <Route path="/*" element={<MenuPage />} />
+
+            <Route path="UItest" element={<PageUITemplate />} />
 
 
             <Route path="/admin/login" element={<AdminLogin />} />
