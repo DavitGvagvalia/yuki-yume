@@ -3,7 +3,7 @@ import {
   BookOpenIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import logo from "../../assets/images/logo.png";
+import logo from "../../assets/images/логобезфона.png";
 import { useCheckout } from "../../hooks/useCheckout";
 
 
@@ -11,7 +11,7 @@ import { useCheckout } from "../../hooks/useCheckout";
 const Logo = () => {
   return (
     <img
-      className="w-12 h-12 object-cover"
+      className="w-12 h-12"
       src={logo} alt="Yuki Yume" />
   )
 }
@@ -41,9 +41,8 @@ export default function NavBar() {
   return (
     !isCheckoutOpen && (
     <nav
-      className="fixed left-0 top-0 z-8 flex h-20 w-full items-center justify-center gap-6 border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:px-10"
+      className="fixed left-0 top-0 z-8 flex w-full items-center justify-center gap-6 border-b border-border bg-background px-1 py-1 backdrop-blur md:px-10"
     >
-      <Linker to="/menu" Icon={BookOpenIcon} text="Menu" />
 
       {/* Logo */}
       <Linker to="/" Icon={Logo} text="Home" />

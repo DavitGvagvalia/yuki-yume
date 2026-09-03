@@ -13,6 +13,7 @@ import {
 function ProductCard({ product, categories, imagePriority = false, onOpenDetail, onChoose }) {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const priceInfo = getProductPriceInfo(product);
+  const description =  (product?.pieces > 1 ? product.pieces + " pieces" : product.description);
 
   function handleKeyDown(e) {
     if (e.key === "Enter" || e.key === " ") {
@@ -27,9 +28,9 @@ function ProductCard({ product, categories, imagePriority = false, onOpenDetail,
       tabIndex={0}
       onClick={onOpenDetail}
       onKeyDown={handleKeyDown}
-      className="flex h-90 cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover md:h-[25rem]"
+      className="flex cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover md:h-[25rem]"
     >
-      <div className="aspect-2/1 w-full overflow-hidden">
+      <div className="aspect-1.5/1 h-30 w-full overflow-hidden">
         <img
           src={product.imageUrl}
           alt={product.name}
@@ -42,17 +43,15 @@ function ProductCard({ product, categories, imagePriority = false, onOpenDetail,
 
       <div className="flex flex-1 flex-col justify-between gap-4 p-4">
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            {getProductCategoryLabel(product, categories)}
-          </p>
 
-          <h4 className="line-clamp-2 text-lg font-bold text-text">
+
+          <h4 className="line-clamp-2 text-sm font-bold text-text">
             {product.name}
           </h4>
 
-          {ingredients.length > 0 && (
+          {description && (
             <p className="line-clamp-2 text-sm text-muted">
-              {ingredients.join(", ")}
+              {description}
             </p>
           )}
         </div>
@@ -117,7 +116,7 @@ const Products = ({ products = [], onChoose }) => {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 overflow-y-auto p-6 pt-45 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 overflow-y-auto p-6 md:grid-cols-3">
         {visibleProducts.map((product, index) => (
           <ProductCard
             key={product.id}

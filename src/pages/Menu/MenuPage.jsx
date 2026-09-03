@@ -9,6 +9,7 @@ import {
   getProductsMatchingCategory
 } from "../../services/product.service.js";
 
+import sakura from "../../assets/images/сакура.png";
 
 const SectionText = () => {
   return (
@@ -20,6 +21,18 @@ const SectionText = () => {
     </div>
   );
 };
+
+
+const MainWithBackground = ({ children }) => {
+  return (
+      <main className="relative min-h-screen overflow-hidden bg-[#557abd]">
+        
+        <img src={sakura} alt="sakura" className="fixed top-15 -left-8 w-40 h-40 object-cover z-0 rotate-60" />
+        <img src={sakura} alt="sakura" className="fixed aspect-square top-1/2 -right-25 w-45 object-cover z-0" />
+        <img src={sakura} alt="sakura" className="fixed bottom-25 -left-15 w-30 h-30 object-cover z-0 rotate-45" />
+        {children}
+    </main>
+  )}
 
 export default function MenuPage() {
   const { visibleProducts } = useProducts()
@@ -58,8 +71,11 @@ export default function MenuPage() {
   });
 
   return (
-    <main className="relative min-h-screen overflow-hidden ">
-      <div className="relative z-1 mx-auto w-full">
+    <MainWithBackground>
+
+      <div className="relative z-1 mx-auto w-full ">
+
+        
         <Categories
           categories={categories}
           categoryLabels={categoryLabels}
@@ -71,6 +87,6 @@ export default function MenuPage() {
           onChoose={addProduct}
         />
       </div>
-    </main>
+    </MainWithBackground>
   );
 }
