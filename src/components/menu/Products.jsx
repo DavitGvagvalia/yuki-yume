@@ -12,7 +12,7 @@ import AddToCartBUtton from "../ui/addToCartBUutton.jsx";
 function ProductCard({ product, categories, imagePriority = false, onOpenDetail, onChoose }) {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const priceInfo = getProductPriceInfo(product);
-  const description =  (product?.pieces > 1 ? product.pieces + " pieces" : product.description);
+  const description =  (product?.pieces > 1 ? product.pieces + " pieces" : "");
 
   function handleKeyDown(e) {
     if (e.key === "Enter" || e.key === " ") {
