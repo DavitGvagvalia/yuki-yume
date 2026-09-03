@@ -75,9 +75,13 @@ export default function MenuPage() {
     <MainWithBackground>
 
       <div className="relative z-1 mx-auto w-full ">
-        <NavBar />
+        <NavBar
+          categories={categories}
+          categoryLabels={categoryLabels}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+        />
 
-        
         <Categories
           categories={categories}
           categoryLabels={categoryLabels}

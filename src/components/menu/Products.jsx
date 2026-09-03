@@ -3,14 +3,40 @@ import { useState } from "react";
 import Detail from "../productDetails/Detail.jsx";
 import { useDetail } from "../../hooks/useDetail";
 import { useCategories } from "../../hooks/useCategories.jsx";
+import { useProducts } from "../../hooks/useProducts.jsx";
 import {
-  getProductCategoryLabel,
   getProductPriceInfo,
   isProductVisible,
 } from "../../services/product.service.js";
 import AddToCartBUtton from "../ui/addToCartBUutton.jsx";
-function ProductCard({ product, categories, imagePriority = false, onOpenDetail, onChoose }) {
-  const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
+
+function normalizeSearchValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function getProductSearchText(product) {
+  const ingredients = Array.isArray(product.ingredients)
+    ? product.ingredients.join(' ')
+    : product.ingredients;
+
+  return normalizeSearchValue([
+    product.name,
+    ingredients
+  ].filter(Boolean).join(' '));
+}
+
+function doesProductMatchSearch(product, query) {
+  const searchTerms = normalizeSearchValue(query).split(/\s+/).filter(Boolean);
+
+  if (searchTerms.length === 0) {
+    return true;
+  }
+
+  const productSearchText = getProductSearchText(product);
+  return searchTerms.every((term) => productSearchText.includes(term));
+}
+
+function ProductCard({ product, imagePriority = false, onOpenDetail, onChoose }) {
   const priceInfo = getProductPriceInfo(product);
   const description =  (product?.pieces > 1 ? product.pieces + " pieces" : "");
 
@@ -84,8 +110,13 @@ const Products = ({ products = [], onChoose }) => {
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { categories } = useCategories();
+  const { searchQuery, visibleProducts: allVisibleProducts } = useProducts();
+  const normalizedSearchQuery = normalizeSearchValue(searchQuery);
+  const productsToShow = normalizedSearchQuery ? allVisibleProducts : products;
 
-  const visibleProducts = products.filter(isProductVisible);
+  const visibleProducts = productsToShow
+    .filter(isProductVisible)
+    .filter((product) => doesProductMatchSearch(product, normalizedSearchQuery));
 
   function handleOpenDetail(product) {
     if (!isProductVisible(product)) return;
@@ -106,11 +137,14 @@ const Products = ({ products = [], onChoose }) => {
   return (
     <>
       <div className="grid grid-cols-2 gap-4 p-6 md:grid-cols-3">
-        {visibleProducts.map((product, index) => (
+        {visibleProducts.length === 0 && normalizedSearchQuery ? (
+          <p className="col-span-2 rounded-md border border-border bg-panel-elevated px-4 py-8 text-center text-sm font-medium text-muted backdrop-blur-xl md:col-span-3">
+            No products found
+          </p>
+        ) : visibleProducts.map((product, index) => (
           <ProductCard
             key={product.id}
             product={product}
-            categories={categories}
             imagePriority={index < 6}
             onOpenDetail={() => handleOpenDetail(product)}
             onChoose={() => handleChoose(product)}

@@ -13,17 +13,10 @@ const Categories = ({ categories, categoryLabels, activeCategory, setActiveCateg
     `flex-shrink-0 rounded-md border px-4 py-2 text-sm font-semibold whitespace-nowrap transition
     ${
       activeCategory === category
-        ? "border-accent bg-accent text-on-accent"
+        ? "border-blossom bg-blossom-active text-text"
         : "border-border bg-control text-text-secondary hover:border-accent hover:text-text"
     }`;
 
-
-    const ContactInformation = () => {
-      return(
-        <address className="not-italic flex items-center">
-        </address>
-      )
-    }
 
 
   function scrollCategories(direction) {
@@ -53,7 +46,6 @@ const Categories = ({ categories, categoryLabels, activeCategory, setActiveCateg
       </div>
 
       </div>
-      <ContactInformation className="text-sm" />
 
     </div>
   );

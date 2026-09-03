@@ -8,7 +8,7 @@ const CartItems = ({ items }) => {
   return (
     <div className="flex-1 overflow-y-auto px-4 pb-5 pt-3">
       {items.length === 0 ? (
-        <p className="mt-5 rounded-md border border-border bg-panel-elevated px-4 py-8 text-center text-sm font-medium text-muted backdrop-blur-xl">
+        <p className="mt-5 rounded-xl px-2 py-3 border-b border-border bg-panel/85  backdrop-blur">
           Your cart is empty
         </p>
       ) : (
@@ -94,8 +94,8 @@ export default function CartDrawer() {
       "
     >
       <CartHeader onCartToggle={toggleCart} />
-      <CartSummary totalPrice={totalPrice} selectedProducts={selectedProducts} closeCart={toggleCart}/>
       <CartItems items={selectedProducts} />
+      <CartSummary totalPrice={totalPrice} selectedProducts={selectedProducts} closeCart={toggleCart}/>
     </aside>
 
   );

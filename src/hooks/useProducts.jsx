@@ -10,6 +10,7 @@ const ProductsProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const hasProductsRef = useRef(false);
   const visibleProducts = useMemo(() => {
     return products.filter(isProductVisible);
@@ -66,6 +67,8 @@ const ProductsProvider = ({ children }) => {
     loading,
     refreshing,
     error,
+    searchQuery,
+    setSearchQuery,
     refreshProducts,
     setProducts: replaceProducts
   };

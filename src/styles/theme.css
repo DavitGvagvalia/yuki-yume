@@ -17,6 +17,9 @@
   --color-ice-muted: #eaf1ff;
   --color-blue: #557abd;
   --color-blue-soft: #7f9cd0;
+  --color-blossom: #E5B8CD;
+  --color-blossom-soft: rgb(229 184 205 / 0.46);
+  --color-blossom-active: #ffb8e6;
   --color-blue-ink: #0f1b33;
   --color-blue-gray: #263957;
   --color-blue-muted: #405371;
@@ -33,7 +36,7 @@
   --color-accent: var(--color-blue);
   --color-accent-hover: #4267a8;
   --color-accent-muted: var(--color-blue-soft);
-  --color-accent-soft: rgb(255 255 255 / 0.46);
+  --color-accent-soft: var(--color-blossom-soft);
   --color-on-accent: var(--color-snow);
   --color-success: #2f8f67;
   --color-success-soft: #e4f5ee;
@@ -64,13 +67,13 @@
   /* Background images */
   --background-image-background: linear-gradient(
     180deg,
-    rgb(255 255 255 / 0.18) 0%,
+    rgb(229 184 205 / 0.3) 0%,
     rgb(85 122 189 / 0.94) 36%,
     var(--color-blue) 100%
   );
   --background-image-menu: linear-gradient(
     180deg,
-    rgb(255 255 255 / 0.16) 0%,
+    rgb(229 184 205 / 0.28) 0%,
     rgb(85 122 189 / 0.92) 44%,
     var(--color-blue) 100%
   );

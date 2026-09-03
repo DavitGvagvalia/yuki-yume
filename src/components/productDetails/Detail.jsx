@@ -56,26 +56,31 @@ const DetailBody = ({ product, categories }) => {
 
   return (
     <div className='flex flex-1 flex-col gap-4 overflow-y-auto p-4'>
+      <SectionUI>
       <div className="overflow-hidden rounded-md border border-border bg-panel-elevated backdrop-blur-xl">
         <img src={product.imageUrl} alt={product.name} className='max-h-80 w-full object-cover' />
       </div>
-
-
-      <SectionUI>
-        <div className='flex flex-col gap-0.5'>
+    
+        <div className='flex flex-col gap-0.5 items-baseline'>
+          <div className='flex gap-0.5 items-baseline'>
           <h3 className='text-xl font-bold text-text'>
             {product.name}
-            {product.spicy && <span className='text-danger'>🔥</span>}
-            {product.vegetarian && <span className='text-success'>🌱</span>}
+          { product.spicy && <span className='text-danger'>🔥</span>}
+          { product.vegetarian && <span className='text-success'>🌱</span>}
           </h3>
-          <p className='text-sm text-muted'>{getProductCategoryLabel(product, categories)}</p>
+          
+          </div>
+          <p className='ml-1 text-sm text-muted'>{getProductCategoryLabel(product, categories)}</p>
         </div>
-        </SectionUI>
+      </SectionUI>
+      <SectionUI>
+        <h3 className='text-xl font-bold text-text'>Ingredients</h3>
         {ingredients.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1 text-sm leading-6 text-text-secondary">
             {ingredients.join(" | ")}
           </div>
         )}
+      </SectionUI>
       
 
       {detailMetadata.length > 0 && (
