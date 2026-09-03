@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { PlusIcon } from "@heroicons/react/24/outline";
 
 import Detail from "../productDetails/Detail.jsx";
 import { useDetail } from "../../hooks/useDetail";
@@ -9,7 +8,7 @@ import {
   getProductPriceInfo,
   isProductVisible,
 } from "../../services/product.service.js";
-
+import AddToCartBUtton from "../ui/addToCartBUutton.jsx";
 function ProductCard({ product, categories, imagePriority = false, onOpenDetail, onChoose }) {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const priceInfo = getProductPriceInfo(product);
@@ -28,7 +27,7 @@ function ProductCard({ product, categories, imagePriority = false, onOpenDetail,
       tabIndex={0}
       onClick={onOpenDetail}
       onKeyDown={handleKeyDown}
-      className="flex cursor-pointer flex-col overflow-hidden rounded-md border border-border bg-panel-elevated transition hover:border-accent hover:bg-control-hover md:h-[25rem]"
+      className="flex cursor-pointer flex-col overflow-hidden rounded-md border border-white/75 bg-white/85 shadow-[0_18px_45px_rgb(23_36_63_/_0.18)] backdrop-blur-xl transition hover:border-white hover:bg-white/95 md:h-[25rem]"
     >
       <div className="aspect-1.5/1 h-30 w-full overflow-hidden">
         <img
@@ -69,17 +68,7 @@ function ProductCard({ product, categories, imagePriority = false, onOpenDetail,
             )}
           </div>
 
-          <button
-            type="button"
-            aria-label={`Add ${product.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onChoose();
-            }}
-            className="engage rounded-md bg-accent px-3 py-2 text-on-accent transition hover:bg-accent-hover active:scale-[1.03]"
-          >
-            <PlusIcon className="h-5 w-5" />
-          </button>
+          <AddToCartBUtton product={product} onChoose={onChoose} />
         </div>
       </div>
     </div>
@@ -116,7 +105,7 @@ const Products = ({ products = [], onChoose }) => {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4 overflow-y-auto p-6 md:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 p-6 md:grid-cols-3">
         {visibleProducts.map((product, index) => (
           <ProductCard
             key={product.id}

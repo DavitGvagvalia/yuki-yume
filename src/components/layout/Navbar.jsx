@@ -41,7 +41,7 @@ export default function NavBar() {
   return (
     !isCheckoutOpen && (
     <nav
-      className="fixed left-0 top-0 z-8 flex w-full items-center justify-center gap-6 border-b border-border bg-background px-1 py-1 backdrop-blur md:px-10"
+      className="sticky left-0 top-0 z-8 flex w-full items-center justify-center gap-6 border-b border-border bg-background px-1 py-1 backdrop-blur md:px-10"
     >
 
       {/* Logo */}

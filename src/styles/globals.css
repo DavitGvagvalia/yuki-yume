@@ -3,12 +3,15 @@
 @import "./animations.css";
 
 body {
-  background-color: var(--color-background);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.16) 0%, transparent 36%),
+    linear-gradient(180deg, #6f8fca 0%, var(--color-background) 42%, #456cad 100%);
+  background-attachment: fixed;
   color: var(--color-text);
 }
 
 ::-webkit-scrollbar {
-  background-color: var(--color-surface);
+  background-color: rgb(255 255 255 / 0.18);
   width: 3px;
   height: 3px;
 }
@@ -27,4 +30,38 @@ scrollbar-none::-webkit-scrollbar {
 
 .background-image {
   background-image: var(--background-image-background);
+}
+
+.bg-background,
+.bg-panel,
+.bg-panel-elevated,
+.bg-control,
+.bg-accent-soft {
+  background-clip: padding-box;
+}
+
+.bg-panel,
+.bg-panel-elevated,
+.bg-control,
+.bg-accent-soft {
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 18px 45px rgb(23 36 63 / 0.1);
+}
+
+.bg-panel {
+  background-color: rgb(255 255 255 / 0.38);
+}
+
+.bg-panel-elevated,
+.bg-control {
+  background-color: rgb(255 255 255 / 0.78);
+}
+
+.bg-control-hover {
+  background-color: rgb(255 255 255 / 0.9);
+}
+
+.bg-accent-soft {
+  background-color: rgb(255 255 255 / 0.4);
 }

@@ -10,6 +10,7 @@ import {
 } from "../../services/product.service.js";
 
 import sakura from "../../assets/images/сакура.png";
+import NavBar from "../../components/layout/Navbar.jsx";
 
 const SectionText = () => {
   return (
@@ -74,6 +75,7 @@ export default function MenuPage() {
     <MainWithBackground>
 
       <div className="relative z-1 mx-auto w-full ">
+        <NavBar />
 
         
         <Categories

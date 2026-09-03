@@ -8,33 +8,32 @@
 }
 
 @theme {
-  
+
   /* Brand palette */
   --color-ink: #151515;
   --color-snow: #ffffff;
-  --color-ice: #d6f1ff;
-  --color-ice-soft: #f4fbff;
-  --color-ice-muted: #e8f6ff;
-  --color-blue: #1b6cd1;
-  --color-blue-soft: #3077cf;
-  --color-blue-ink: #102a43;
-  --color-blue-gray: #48677f;
-  --color-blue-muted: #6f8798;
-  --color-blue-border: #bddff2;
-  --color-blue-disabled: #c7d9e5;
+  --color-ice: #dce8ff;
+  --color-ice-soft: #f4f8ff;
+  --color-ice-muted: #eaf1ff;
+  --color-blue: #557abd;
+  --color-blue-soft: #7f9cd0;
+  --color-blue-ink: #0f1b33;
+  --color-blue-gray: #263957;
+  --color-blue-muted: #405371;
+  --color-blue-border: rgb(255 255 255 / 0.64);
+  --color-blue-disabled: #c3cee0;
 
   /* App surfaces */
-  --color-background: var(--color-ice-soft);
-  --color-surface: var(--color-ice-muted);
-  --color-card: var(--color-snow);
-  --color-card-hover: var(--color-ice);
-
+  --color-background: var(--color-blue);
+  --color-surface: rgb(255 255 255 / 0.36);
+  --color-card: rgb(255 255 255 / 0.78);
+  --color-card-hover: rgb(255 255 255 / 0.9);
 
   /* Interactive states */
   --color-accent: var(--color-blue);
-  --color-accent-hover: #1559ae;
+  --color-accent-hover: #4267a8;
   --color-accent-muted: var(--color-blue-soft);
-  --color-accent-soft: color-mix(in srgb, var(--color-blue) 12%, var(--color-snow));
+  --color-accent-soft: rgb(255 255 255 / 0.46);
   --color-on-accent: var(--color-snow);
   --color-success: #2f8f67;
   --color-success-soft: #e4f5ee;
@@ -50,7 +49,7 @@
 
   /* Lines and disabled controls */
   --color-border: var(--color-blue-border);
-  --color-border-strong: color-mix(in srgb, var(--color-blue) 34%, var(--color-blue-border));
+  --color-border-strong: rgb(255 255 255 / 0.7);
   --color-disabled: var(--color-blue-disabled);
 
   /* Component aliases */
@@ -65,15 +64,15 @@
   /* Background images */
   --background-image-background: linear-gradient(
     180deg,
-    var(--color-snow) 0%,
-    var(--color-ice-soft) 42%,
-    var(--color-ice) 100%
+    rgb(255 255 255 / 0.18) 0%,
+    rgb(85 122 189 / 0.94) 36%,
+    var(--color-blue) 100%
   );
   --background-image-menu: linear-gradient(
     180deg,
-    var(--color-snow) 0%,
-    var(--color-ice-soft) 48%,
-    var(--color-ice) 100%
+    rgb(255 255 255 / 0.16) 0%,
+    rgb(85 122 189 / 0.92) 44%,
+    var(--color-blue) 100%
   );
 
   /* Typography */
