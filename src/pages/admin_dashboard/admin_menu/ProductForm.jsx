@@ -15,6 +15,7 @@ function ProductForm({
 	submitting,
 	imageFile,
 	currentImageUrl,
+	currentProductId,
 	onChange,
 	onImageChange,
 	onSubmit,
@@ -25,9 +26,9 @@ function ProductForm({
 	const [previewImage, setPreviewImage] = useState(currentImageUrl || PLACEHOLDER_IMAGE);
 	let imageUploadPath = '';
 
-	if (imageFile && form.name) {
+	if (imageFile && currentProductId) {
 		try {
-			imageUploadPath = getProductImagePath(form.name, imageFile);
+			imageUploadPath = getProductImagePath(currentProductId, imageFile);
 		} catch { }
 	}
 

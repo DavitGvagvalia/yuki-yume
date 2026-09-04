@@ -145,6 +145,7 @@ function PageUITemplate({
 										submitting={productActions.submitting}
 										imageFile={productActions.imageFile}
 										currentImageUrl={productActions.selectedProduct?.imageUrl}
+										currentProductId={productActions.selectedProduct?.id}
 										onChange={productActions.updateField}
 										onImageChange={productActions.changeImage}
 										onSubmit={productActions.submitProduct}

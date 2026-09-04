@@ -7,6 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "migrate:categories": "node scripts/migrate-categories.js",
+    "migrate:product-images": "node scripts/migrate-product-images-to-uuid.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },

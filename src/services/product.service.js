@@ -9,6 +9,7 @@ import {
   addDoc,
   getDocs,
   doc,
+  setDoc,
   updateDoc,
   deleteDoc,
   writeBatch
@@ -132,6 +133,7 @@ export function normalizeProductForSave(product) {
     categoryOrder,
     categoryOrders,
     _invalidReason,
+    _productId,
     ...productFields
   } = product;
 
@@ -235,9 +237,21 @@ export async function getProducts() {
   return sortProductsByCategoryOrder(productsWithImages);
 }
 
-export default async function addProduct(productData) {
+export function createProductId() {
+  return doc(productsCollection).id;
+}
+
+export default async function addProduct(productData, productId = '') {
   try {
     const product = createProduct(mergeProductWithCategoryFields(productData));
+
+    if (productId) {
+      await setDoc(doc(productsCollection, productId), product);
+      clearProductsCache();
+      console.log('Product added with ID:', productId);
+      return productId;
+    }
+
     const newDoc = await addDoc(productsCollection, product);
 
     clearProductsCache();
@@ -360,20 +374,25 @@ export async function batchAddProducts(products) {
         categorySortCounts.set(categoryId, Math.max(categorySortCounts.get(categoryId) || 0, sortOrder));
       });
       productsToAdd.push({
-        ...productDefaults,
-        ...normalizedInputProduct,
-        name: normalizedInputProduct.name.trim(),
-        categoryIds,
-        sortOrder,
-        image: String(normalizedInputProduct.image || '').trim()
+        id: String(product._productId || '').trim(),
+        data: {
+          ...productDefaults,
+          ...normalizedInputProduct,
+          name: normalizedInputProduct.name.trim(),
+          categoryIds,
+          sortOrder,
+          image: String(normalizedInputProduct.image || '').trim()
+        }
       });
     });
 
     for (let start = 0; start < productsToAdd.length; start += 500) {
       const batch = writeBatch(db);
 
-      productsToAdd.slice(start, start + 500).forEach((product) => {
-        batch.set(doc(productsCollection), product);
+      productsToAdd.slice(start, start + 500).forEach(({ id, data }) => {
+        const productRef = id ? doc(productsCollection, id) : doc(productsCollection);
+
+        batch.set(productRef, data);
       });
 
       await batch.commit();

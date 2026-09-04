@@ -35,19 +35,23 @@ function getImageExtension(file) {
   return '';
 }
 
-export function getProductImagePath(productName, file) {
-  const safeName = createSafeImageName(productName);
+export function getProductImagePath(productId, file) {
+  const safeProductId = String(productId || '').trim();
   const extension = getImageExtension(file);
 
-  if (!safeName) {
-    throw new Error('Product name is required before uploading an image.');
+  if (!safeProductId) {
+    throw new Error('Product ID is required before uploading an image.');
+  }
+
+  if (safeProductId.includes('/')) {
+    throw new Error('Product ID cannot contain slashes.');
   }
 
   if (!extension) {
     throw new Error('Unsupported image type. Use JPG, PNG, WEBP, or AVIF.');
   }
 
-  return `products/${safeName}.${extension}`;
+  return `products/${safeProductId}.${extension}`;
 }
 
 function validateImageFile(file) {
@@ -64,17 +68,25 @@ function validateImageFile(file) {
   }
 }
 
-export async function uploadProductImage(productName, file) {
+export async function uploadProductImage(productId, file, metadata = {}) {
   validateImageFile(file);
 
-  const path = getProductImagePath(productName, file);
+  const path = getProductImagePath(productId, file);
   const imageRef = ref(storage, path);
+  const customMetadata = Object.entries({
+    ...metadata,
+    productId: String(productId || '').trim()
+  }).reduce((values, [key, value]) => {
+    if (value !== null && value !== undefined && String(value).trim()) {
+      values[key] = String(value).trim();
+    }
+
+    return values;
+  }, {});
 
   await uploadBytes(imageRef, file, {
     contentType: file.type || undefined,
-    customMetadata: {
-      productName: String(productName || '').trim()
-    }
+    customMetadata
   });
 
   return path;
