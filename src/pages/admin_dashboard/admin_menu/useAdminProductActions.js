@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import addProduct, {
 	batchAddProducts,
+	createProductId,
 	deleteProduct,
 	getProductCategoryIds,
 	sortProductsByCategoryOrder,
@@ -110,10 +111,6 @@ export function useAdminProductActions({
 				throw new Error('Choose at least one category.');
 			}
 
-			if (imageFile) {
-				productData.image = await uploadProductImage(productData.name, imageFile);
-			}
-
 			if (!selectedProduct && !form.sortOrder) {
 				const matchingCategoryProducts = products.filter((product) => (
 					getProductCategoryIds(product).includes(productData.categoryIds[0])
@@ -124,6 +121,12 @@ export function useAdminProductActions({
 			const normalizedProductData = productData;
 
 			if (selectedProduct) {
+				if (imageFile) {
+					normalizedProductData.image = await uploadProductImage(selectedProduct.id, imageFile, {
+						productName: normalizedProductData.name
+					});
+				}
+
 				await updateProduct(selectedProduct.id, normalizedProductData);
 				const updatedProduct = {
 					...selectedProduct,
@@ -140,7 +143,15 @@ export function useAdminProductActions({
 				setSelectedProduct(updatedProduct);
 				setMessage('Product updated.');
 			} else {
-				const productId = await addProduct(normalizedProductData);
+				const productId = createProductId();
+
+				if (imageFile) {
+					normalizedProductData.image = await uploadProductImage(productId, imageFile, {
+						productName: normalizedProductData.name
+					});
+				}
+
+				await addProduct(normalizedProductData, productId);
 				updateProductsLocally((currentProducts) => ([
 					...currentProducts,
 					{
@@ -230,7 +241,10 @@ export function useAdminProductActions({
 				uploadProductNames.add(safeProductName);
 
 				if (matchingImage) {
-					product.image = await uploadProductImage(product.name, matchingImage);
+					product._productId = createProductId();
+					product.image = await uploadProductImage(product._productId, matchingImage, {
+						productName: product.name
+					});
 					uploadedImages += 1;
 				}
 			}
