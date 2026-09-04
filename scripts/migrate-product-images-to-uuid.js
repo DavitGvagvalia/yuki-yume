@@ -292,10 +292,27 @@ function getExtension(storagePath) {
   return match ? match[1] : '';
 }
 
-function getTargetPath(productId, sourcePath) {
-  const extension = getExtension(sourcePath);
+function createSafeImageName(name) {
+  return String(name || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
-  return extension ? `products/${productId}.${extension}` : '';
+function getTargetPath(productId, productName, sourcePath) {
+  const extension = getExtension(sourcePath);
+  const safeProductName = createSafeImageName(productName);
+
+  if (!extension) {
+    return '';
+  }
+
+  return safeProductName
+    ? `products/${productId}-${safeProductName}.${extension}`
+    : `products/${productId}.${extension}`;
 }
 
 function sameObjectContent(firstObject, secondObject) {
@@ -361,12 +378,13 @@ async function main() {
   const productsWithImages = products
     .map((product) => {
       const id = documentId(product.name);
+      const name = stringField(product, 'name');
       const sourcePath = normalizeStoragePath(stringField(product, 'image'), bucket);
-      const targetPath = getTargetPath(id, sourcePath);
+      const targetPath = getTargetPath(id, name, sourcePath);
 
       return {
         id,
-        name: stringField(product, 'name'),
+        name,
         documentName: product.name,
         originalImageValue: stringField(product, 'image'),
         sourcePath,
@@ -400,9 +418,9 @@ async function main() {
     if (product.sourcePath === product.targetPath) {
       results.push({
         ...product,
-        status: 'already-uuid'
+        status: 'already-target-path'
       });
-      console.log(`OK already UUID path: ${product.id} ${product.sourcePath}`);
+      console.log(`OK already target path: ${product.id} ${product.sourcePath}`);
       continue;
     }
 

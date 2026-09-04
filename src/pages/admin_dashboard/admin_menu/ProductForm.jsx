@@ -28,7 +28,7 @@ function ProductForm({
 
 	if (imageFile && currentProductId) {
 		try {
-			imageUploadPath = getProductImagePath(currentProductId, imageFile);
+			imageUploadPath = getProductImagePath(currentProductId, imageFile, form.name);
 		} catch { }
 	}
 

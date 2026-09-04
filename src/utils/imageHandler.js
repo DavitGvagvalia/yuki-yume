@@ -35,8 +35,9 @@ function getImageExtension(file) {
   return '';
 }
 
-export function getProductImagePath(productId, file) {
+export function getProductImagePath(productId, file, productName = '') {
   const safeProductId = String(productId || '').trim();
+  const safeProductName = createSafeImageName(productName);
   const extension = getImageExtension(file);
 
   if (!safeProductId) {
@@ -51,7 +52,9 @@ export function getProductImagePath(productId, file) {
     throw new Error('Unsupported image type. Use JPG, PNG, WEBP, or AVIF.');
   }
 
-  return `products/${safeProductId}.${extension}`;
+  return safeProductName
+    ? `products/${safeProductId}-${safeProductName}.${extension}`
+    : `products/${safeProductId}.${extension}`;
 }
 
 function validateImageFile(file) {
@@ -71,7 +74,7 @@ function validateImageFile(file) {
 export async function uploadProductImage(productId, file, metadata = {}) {
   validateImageFile(file);
 
-  const path = getProductImagePath(productId, file);
+  const path = getProductImagePath(productId, file, metadata.productName);
   const imageRef = ref(storage, path);
   const customMetadata = Object.entries({
     ...metadata,
