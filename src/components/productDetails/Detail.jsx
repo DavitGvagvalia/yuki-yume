@@ -49,66 +49,76 @@ const DetailAction = ({ product }) => {
   )
 }
 
+
 const DetailBody = ({ product, categories }) => {
   const ingredients = Array.isArray(product.ingredients) ? product.ingredients : [];
   const detailMetadata = getProductDetailMetadata(product);
   const priceInfo = getProductPriceInfo(product);
 
   return (
-    <div className='flex flex-1 flex-col gap-4 overflow-y-auto p-4'>
+    <div className='flex flex-col gap-4 overflow-y-auto p-4'>
       <SectionUI>
-      <div className="overflow-hidden rounded-md border border-border bg-panel-elevated backdrop-blur-xl">
-        <img src={product.imageUrl} alt={product.name} className='max-h-80 w-full object-cover' />
-      </div>
-    
-        <div className='flex flex-col gap-0.5 items-baseline'>
-          <div className='flex gap-0.5 items-baseline'>
-          <h3 className='text-xl font-bold text-text'>
-            {product.name}
-          { product.spicy && <span className='text-danger'>🔥</span>}
-          { product.vegetarian && <span className='text-success'>🌱</span>}
-          </h3>
-          
+        <div className="flex flex-col gap-3 items-baseline">
+          <div className="overflow-hidden rounded-md border border-border bg-panel-elevated backdrop-blur-xl">
+            <img src={product.imageUrl} alt={product.name} className='max-h-80 w-full object-cover' />
           </div>
-          <p className='ml-1 text-sm text-muted'>{getProductCategoryLabel(product, categories)}</p>
+
+          <div className='flex flex-col gap-0.5 items-baseline'>
+            <div className='flex gap-0.5 items-baseline'>
+              <h3 className='text-xl font-bold text-text'>
+                {product.name}
+                {product.spicy && <span className='ml-2 text-danger'>🔥</span>}
+                {product.vegetarian && <span className='ml-2 text-success'>🌱</span>}
+              </h3>
+
+            </div>
+            <p className='ml-1 text-sm text-muted'>{getProductCategoryLabel(product, categories)}</p>
+
+
+            <div className="mb-4 flex flex-wrap items-center absolute right-2 bottom-0">
+              <div className="flex flex-col">
+                <p className='text-xl font-bold text-text'>{priceInfo.currentPriceLabel}₾</p>
+                {priceInfo.hasPromotion && (
+                  <div className="flex items-center gap-0.5">
+                    <p className="text-sm text-muted line-through">{priceInfo.basePriceLabel}₾</p>
+                    <span className="rounded bg-success-soft px-2 py-0.5 text-xs font-semibold text-success">
+                      -{priceInfo.promotion}%
+                    </span>
+                  </div>
+                )}
+              </div>
+              <DetailAction product={product} />
+            </div>
+          </div>
         </div>
       </SectionUI>
+
       <SectionUI>
         <h3 className='text-xl font-bold text-text'>Ingredients</h3>
-        {ingredients.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1 text-sm leading-6 text-text-secondary">
-            {ingredients.join(" | ")}
-          </div>
-        )}
-      </SectionUI>
-      
-
-      {detailMetadata.length > 0 && (
-        <div className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-3">
-          {detailMetadata.map((item) => (
-            <div key={item.key} className="rounded-md border border-border bg-control p-3 backdrop-blur-xl">
-              <span className="block text-xs font-semibold uppercase tracking-wide text-muted">{item.label}</span>
-              <span className="font-semibold text-text">{item.value}</span>
+        <div className="flex flex-wrap gap-1 text-sm leading-6 text-text-secondary align-middle">
+          {ingredients.map((ingredient, index) => (
+            <div key={index} className='text-text-secondary'>
+              {ingredient}
+              <span className='ml-1 text-xl text-accent'>|</span>
             </div>
           ))}
         </div>
-      )}
-      <SectionUI>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-col gap-2">
-            <p className='text-xl font-bold text-text'>{priceInfo.currentPriceLabel}₾</p>
-            {priceInfo.hasPromotion && (
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-muted line-through">{priceInfo.basePriceLabel}₾</p>
-                <span className="rounded bg-success-soft px-2 py-0.5 text-xs font-semibold text-success">
-                  -{priceInfo.promotion}%
-                </span>
-              </div>
-            )}
-          </div>
-          <DetailAction product={product} />
-        </div>
       </SectionUI>
+
+
+      {detailMetadata.length > 0 && (
+        <SectionUI >
+          <div className="flex gap-4 justify-center">
+            {detailMetadata.map((item) => (
+              <div key={item.key} className="flex flex-col bg-blossom text-text rounded-xl p-2 text-sm text-center">
+                <span className="font-semibold text-text">{item.value}</span>
+                <span className=" text-xs font-semibold uppercase tracking-wide text-muted">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </SectionUI>
+      )}
+
     </div>
   )
 }

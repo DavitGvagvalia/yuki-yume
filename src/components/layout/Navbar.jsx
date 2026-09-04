@@ -19,7 +19,7 @@ const Logo = ({ className = "h-12 w-12" }) => {
         alt="Yuki Yume"
       />
 
-      <span className="text-sm font-semibold text-text-secondary">
+      <span className="text-lg font-bold text-snow  ">
         Yuki Yume
       </span>
     </div>

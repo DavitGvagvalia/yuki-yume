@@ -4,6 +4,21 @@ import { createCustomContext } from "../utils/createContext";
 import { fetcherHandler } from "../utils/storageHandler";
 const ProductsContext = createContext(null);
 
+function normalizeSearchValue(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function getProductSearchText(product) {
+  const ingredients = Array.isArray(product.ingredients)
+    ? product.ingredients.join(' ')
+    : product.ingredients;
+
+  return normalizeSearchValue([
+    product.name,
+    ingredients
+  ].filter(Boolean).join(' '));
+}
+
 const ProductsProvider = ({ children }) => {
 
   const [products, setProducts] = useState([]);
@@ -15,6 +30,19 @@ const ProductsProvider = ({ children }) => {
   const visibleProducts = useMemo(() => {
     return products.filter(isProductVisible);
   }, [products]);
+
+  const filterProductsBySearch = useCallback((productsToFilter) => {
+    const searchTerms = normalizeSearchValue(searchQuery).split(/\s+/).filter(Boolean);
+
+    if (searchTerms.length === 0) {
+      return productsToFilter;
+    }
+
+    return productsToFilter.filter((product) => {
+      const productSearchText = getProductSearchText(product);
+      return searchTerms.every((term) => productSearchText.includes(term));
+    });
+  }, [searchQuery]);
 
   const replaceProducts = useCallback((productsOrUpdater) => {
     setProducts((currentProducts) => {
@@ -69,6 +97,7 @@ const ProductsProvider = ({ children }) => {
     error,
     searchQuery,
     setSearchQuery,
+    filterProductsBySearch,
     refreshProducts,
     setProducts: replaceProducts
   };

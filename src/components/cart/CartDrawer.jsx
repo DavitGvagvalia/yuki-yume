@@ -48,8 +48,8 @@ const CartSummary = ({ totalPrice, selectedProducts, closeCart }) => {
   }
 
   return (
-    <div className="px-4 pt-4">
-      <div className='flex items-center justify-between gap-3 rounded-md border border-border bg-panel-elevated p-2 pl-5 backdrop-blur-xl'>
+    <div className="px-4 pt-4 mb-3">
+      <div className='flex items-center justify-between mb-5 w-full rounded-3xl border border-border bg-panel-elevated p-2 px-7 shadow-2xl backdrop-blur'>
         <div className="flex flex-col">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted">Total</span>
           <h1 className='text-lg font-bold text-text'>{totalPrice} GEL</h1>

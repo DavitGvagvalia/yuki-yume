@@ -26,7 +26,7 @@ const SectionText = () => {
 
 const MainWithBackground = ({ children }) => {
   return (
-      <main className="relative min-h-screen overflow-hidden bg-[#557abd]">
+      <main className="relative min-h-screen overflow-hidden bg-[#557abd] border-b border-border">
         
         <img src={sakura} alt="sakura" className="fixed top-15 -left-8 w-40 h-40 object-cover z-0 rotate-60" />
         <img src={sakura} alt="sakura" className="fixed aspect-square top-1/2 -right-25 w-45 object-cover z-0" />
