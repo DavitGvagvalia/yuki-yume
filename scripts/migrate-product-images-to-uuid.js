@@ -1,13 +1,10 @@
 #!/usr/bin/env node
-import { createSign } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
-
-const FIRESTORE_API = 'https://firestore.googleapis.com/v1';
-const STORAGE_API = 'https://storage.googleapis.com/storage/v1';
-const TOKEN_URL = 'https://oauth2.googleapis.com/token';
-const SCOPE = 'https://www.googleapis.com/auth/cloud-platform';
+import { applicationDefault, initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
 
 function parseArgs(argv) {
   return argv.reduce((args, arg) => {
@@ -43,14 +40,16 @@ function parseArgs(argv) {
 function printUsage() {
   console.log(`
 Usage:
-  GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json npm run migrate:product-images
-  GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json npm run migrate:product-images -- --write
+  gcloud auth application-default login
+  firebase use <project-id>
+  npm run migrate:product-images
+  npm run migrate:product-images -- --write
 
 Options:
   --write                Copy Storage objects, update Firestore, then delete unreferenced old source objects.
   --keep-old             With --write, keep old source objects after successful migration.
-  --credentials=PATH     Service account JSON path. Alternative to GOOGLE_APPLICATION_CREDENTIALS.
-  --project-id=ID        Firebase project ID. Defaults to .env, service account, or .firebaserc.
+  --credentials=PATH     ADC/service account JSON path. Alternative to GOOGLE_APPLICATION_CREDENTIALS.
+  --project-id=ID        Firebase project ID. Defaults to .env or .firebaserc.
   --bucket=NAME          Firebase Storage bucket. Defaults to VITE_FIREBASE_STORAGE_BUCKET in .env.
 `);
 }
@@ -113,155 +112,6 @@ async function getDefaultFirebaseProjectId() {
   return firebaseRc?.projects?.default || '';
 }
 
-function base64Url(input) {
-  return Buffer.from(input)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '');
-}
-
-function signJwt(serviceAccount) {
-  const now = Math.floor(Date.now() / 1000);
-  const header = base64Url(JSON.stringify({
-    alg: 'RS256',
-    typ: 'JWT'
-  }));
-  const payload = base64Url(JSON.stringify({
-    iss: serviceAccount.client_email,
-    scope: SCOPE,
-    aud: TOKEN_URL,
-    iat: now,
-    exp: now + 3600
-  }));
-  const unsignedToken = `${header}.${payload}`;
-  const signer = createSign('RSA-SHA256');
-
-  signer.update(unsignedToken);
-  signer.end();
-
-  return `${unsignedToken}.${base64Url(signer.sign(serviceAccount.private_key))}`;
-}
-
-async function getAccessToken(serviceAccount) {
-  const response = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: signJwt(serviceAccount)
-    })
-  });
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(`Token request failed: ${response.status} ${JSON.stringify(data)}`);
-  }
-
-  return data.access_token;
-}
-
-async function requestJson(url, token, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers || {})
-    }
-  });
-
-  if (response.status === 404) {
-    return null;
-  }
-
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
-
-  if (!response.ok) {
-    throw new Error(`${options.method || 'GET'} ${url} failed: ${response.status} ${text}`);
-  }
-
-  return data;
-}
-
-function documentId(documentName) {
-  return documentName.split('/').pop();
-}
-
-function stringField(document, fieldName) {
-  return document?.fields?.[fieldName]?.stringValue || '';
-}
-
-async function listProducts(projectId, token) {
-  const products = [];
-  let pageToken = '';
-
-  do {
-    const url = new URL(`${FIRESTORE_API}/projects/${projectId}/databases/(default)/documents/products`);
-
-    url.searchParams.set('pageSize', '500');
-
-    if (pageToken) {
-      url.searchParams.set('pageToken', pageToken);
-    }
-
-    const page = await requestJson(url, token);
-
-    products.push(...(page?.documents || []));
-    pageToken = page?.nextPageToken || '';
-  } while (pageToken);
-
-  return products;
-}
-
-async function getProduct(documentName, token) {
-  return requestJson(`${FIRESTORE_API}/${documentName}`, token);
-}
-
-async function updateProductImage(documentName, imagePath, token) {
-  const url = new URL(`${FIRESTORE_API}/${documentName}`);
-
-  url.searchParams.set('updateMask.fieldPaths', 'image');
-
-  return requestJson(url, token, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      fields: {
-        image: {
-          stringValue: imagePath
-        }
-      }
-    })
-  });
-}
-
-function encodeObjectName(objectName) {
-  return encodeURIComponent(objectName);
-}
-
-async function getObject(bucket, objectName, token) {
-  return requestJson(`${STORAGE_API}/b/${encodeURIComponent(bucket)}/o/${encodeObjectName(objectName)}`, token);
-}
-
-async function copyObject(bucket, sourceName, targetName, token) {
-  return requestJson(
-    `${STORAGE_API}/b/${encodeURIComponent(bucket)}/o/${encodeObjectName(sourceName)}/copyTo/b/${encodeURIComponent(bucket)}/o/${encodeObjectName(targetName)}`,
-    token,
-    {
-      method: 'POST'
-    }
-  );
-}
-
-async function deleteObject(bucket, objectName, token) {
-  return requestJson(`${STORAGE_API}/b/${encodeURIComponent(bucket)}/o/${encodeObjectName(objectName)}`, token, {
-    method: 'DELETE'
-  });
-}
-
 function normalizeStoragePath(value, bucket) {
   const trimmedValue = String(value || '').trim();
 
@@ -283,6 +133,33 @@ function normalizeStoragePath(value, bucket) {
   } catch {}
 
   return trimmedValue.replace(/^\/+/, '');
+}
+
+function stringField(document, fieldName) {
+  const value = document.get(fieldName);
+
+  return typeof value === 'string' ? value : '';
+}
+
+async function getObject(storageBucket, objectName) {
+  const file = storageBucket.file(objectName);
+  const [exists] = await file.exists();
+
+  if (!exists) {
+    return null;
+  }
+
+  const [metadata] = await file.getMetadata();
+
+  return metadata;
+}
+
+async function copyObject(storageBucket, sourceName, targetName) {
+  await storageBucket.file(sourceName).copy(storageBucket.file(targetName));
+}
+
+async function deleteObject(storageBucket, objectName) {
+  await storageBucket.file(objectName).delete();
 }
 
 function getExtension(storagePath) {
@@ -342,6 +219,23 @@ function statusSummary(results) {
   }, {});
 }
 
+function formatAuthError(error) {
+  const message = error?.message || String(error);
+
+  if (
+    message.includes('Could not load the default credentials') ||
+    message.includes('Your default credentials were not found')
+  ) {
+    return [
+      'Firebase Admin credentials were not found.',
+      'Run `gcloud auth application-default login`, or pass `--credentials=/path/to/service-account.json`.',
+      '`firebase login` authenticates Firebase CLI commands, but it does not create Application Default Credentials for this Node script.'
+    ].join('\n');
+  }
+
+  return message;
+}
+
 async function main() {
   await loadDotenv();
 
@@ -352,32 +246,38 @@ async function main() {
     return;
   }
 
-  const credentialsPath = args.credentials || process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-  if (!credentialsPath) {
-    throw new Error('Set GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json or pass --credentials=/path/to/service-account.json.');
+  if (args.credentials) {
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(args.credentials);
   }
 
-  const serviceAccount = await readJsonFile(credentialsPath);
   const projectId = args['project-id'] ||
     process.env.VITE_FIREBASE_PROJECT_ID ||
-    serviceAccount.project_id ||
     await getDefaultFirebaseProjectId();
   const bucket = args.bucket || process.env.VITE_FIREBASE_STORAGE_BUCKET;
 
   if (!projectId) {
-    throw new Error('Project ID is required. Set VITE_FIREBASE_PROJECT_ID or pass --project-id=...');
+    throw new Error('Project ID is required. Run firebase use <project-id>, set VITE_FIREBASE_PROJECT_ID, or pass --project-id=...');
   }
 
   if (!bucket) {
     throw new Error('Storage bucket is required. Set VITE_FIREBASE_STORAGE_BUCKET or pass --bucket=...');
   }
 
-  const token = await getAccessToken(serviceAccount);
-  const products = await listProducts(projectId, token);
+  const app = initializeApp({
+    credential: applicationDefault(),
+    projectId,
+    storageBucket: bucket
+  });
+
+  await app.options.credential.getAccessToken();
+
+  const db = getFirestore(app);
+  const storageBucket = getStorage(app).bucket(bucket);
+  const productsSnapshot = await db.collection('products').get();
+  const products = productsSnapshot.docs;
   const productsWithImages = products
     .map((product) => {
-      const id = documentId(product.name);
+      const id = product.id;
       const name = stringField(product, 'name');
       const sourcePath = normalizeStoragePath(stringField(product, 'image'), bucket);
       const targetPath = getTargetPath(id, name, sourcePath);
@@ -385,7 +285,7 @@ async function main() {
       return {
         id,
         name,
-        documentName: product.name,
+        ref: product.ref,
         originalImageValue: stringField(product, 'image'),
         sourcePath,
         targetPath
@@ -433,7 +333,7 @@ async function main() {
       continue;
     }
 
-    const sourceObject = await getObject(bucket, product.sourcePath, token);
+    const sourceObject = await getObject(storageBucket, product.sourcePath);
 
     if (!sourceObject) {
       results.push({
@@ -444,7 +344,7 @@ async function main() {
       continue;
     }
 
-    const existingTargetObject = await getObject(bucket, product.targetPath, token);
+    const existingTargetObject = await getObject(storageBucket, product.targetPath);
 
     if (existingTargetObject && !sameObjectContent(sourceObject, existingTargetObject)) {
       results.push({
@@ -456,10 +356,10 @@ async function main() {
     }
 
     if (!existingTargetObject) {
-      await copyObject(bucket, product.sourcePath, product.targetPath, token);
+      await copyObject(storageBucket, product.sourcePath, product.targetPath);
     }
 
-    const targetObject = await getObject(bucket, product.targetPath, token);
+    const targetObject = await getObject(storageBucket, product.targetPath);
 
     if (!sameObjectContent(sourceObject, targetObject)) {
       results.push({
@@ -470,7 +370,7 @@ async function main() {
       continue;
     }
 
-    const latestProduct = await getProduct(product.documentName, token);
+    const latestProduct = await product.ref.get();
     const latestImageValue = stringField(latestProduct, 'image');
 
     if (latestImageValue !== product.originalImageValue) {
@@ -482,7 +382,7 @@ async function main() {
       continue;
     }
 
-    await updateProductImage(product.documentName, product.targetPath, token);
+    await product.ref.update({ image: product.targetPath });
     results.push({
       ...product,
       status: 'migrated'
@@ -491,7 +391,8 @@ async function main() {
   }
 
   if (args.write && !args.keepOld) {
-    const currentProducts = await listProducts(projectId, token);
+    const currentProductsSnapshot = await db.collection('products').get();
+    const currentProducts = currentProductsSnapshot.docs;
     const currentImagePaths = new Set(
       currentProducts
         .map((product) => normalizeStoragePath(stringField(product, 'image'), bucket))
@@ -500,7 +401,7 @@ async function main() {
 
     for (const [sourcePath, group] of sourceGroups.entries()) {
       if (targetPaths.has(sourcePath)) {
-        console.log(`KEEP source is a UUID target: ${sourcePath}`);
+        console.log(`KEEP source is a target path: ${sourcePath}`);
         continue;
       }
 
@@ -518,7 +419,7 @@ async function main() {
         continue;
       }
 
-      await deleteObject(bucket, sourcePath, token);
+      await deleteObject(storageBucket, sourcePath);
       console.log(`DELETED old source: ${sourcePath}`);
     }
   }
@@ -531,6 +432,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error.message || error);
+  console.error(formatAuthError(error));
   process.exitCode = 1;
 });

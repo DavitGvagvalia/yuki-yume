@@ -17,6 +17,7 @@
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
     "firebase": "^12.11.0",
+    "firebase-admin": "^14.3.0",
     "leaflet": "^1.9.4",
     "react": "^19.2.0",
     "react-dnd": "^16.0.1",
